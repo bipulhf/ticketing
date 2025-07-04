@@ -245,21 +245,6 @@ const swaggerDefinition: SwaggerDefinition = {
             description: "Role to assign to the new user",
             example: "user",
           },
-          ipNumber: {
-            type: "string",
-            description: "IP number for the user",
-            example: "192.168.1.100",
-          },
-          deviceName: {
-            type: "string",
-            description: "Device name",
-            example: "LAPTOP-ABC123",
-          },
-          deviceIpAddress: {
-            type: "string",
-            description: "Device IP address",
-            example: "192.168.1.100",
-          },
           businessType: {
             type: "string",
             enum: ["small_business", "medium_business", "large_business"],

@@ -242,21 +242,6 @@
             "description": "Role to assign to the new user",
             "example": "user"
           },
-          "ipNumber": {
-            "type": "string",
-            "description": "IP number for the user",
-            "example": "192.168.1.100"
-          },
-          "deviceName": {
-            "type": "string",
-            "description": "Device name",
-            "example": "LAPTOP-ABC123"
-          },
-          "deviceIpAddress": {
-            "type": "string",
-            "description": "Device IP address",
-            "example": "192.168.1.100"
-          },
           "businessType": {
             "type": "string",
             "enum": ["small_business", "medium_business", "large_business"],
@@ -691,21 +676,6 @@
                     ],
                     "description": "Role to assign to the new user",
                     "example": "user"
-                  },
-                  "ipNumber": {
-                    "type": "string",
-                    "description": "IP number for the user",
-                    "example": "192.168.1.100"
-                  },
-                  "deviceName": {
-                    "type": "string",
-                    "description": "Device name",
-                    "example": "LAPTOP-ABC123"
-                  },
-                  "deviceIpAddress": {
-                    "type": "string",
-                    "description": "Device IP address",
-                    "example": "192.168.1.100"
                   },
                   "businessType": {
                     "type": "string",
@@ -2235,21 +2205,6 @@
                     "description": "Password for the Admin",
                     "example": "SecurePass123!"
                   },
-                  "ipNumber": {
-                    "type": "string",
-                    "description": "IP number for the Admin",
-                    "example": "192.168.1.10"
-                  },
-                  "deviceName": {
-                    "type": "string",
-                    "description": "Device name",
-                    "example": "ADMIN-LAPTOP-01"
-                  },
-                  "deviceIpAddress": {
-                    "type": "string",
-                    "description": "Device IP address",
-                    "example": "192.168.1.10"
-                  },
                   "location": {
                     "type": "string",
                     "description": "Admin location/department",
@@ -2360,21 +2315,6 @@
                     "description": "Password for the IT Person",
                     "example": "SecurePass123!"
                   },
-                  "ipNumber": {
-                    "type": "string",
-                    "description": "IP number for the IT Person",
-                    "example": "192.168.1.20"
-                  },
-                  "deviceName": {
-                    "type": "string",
-                    "description": "Device name",
-                    "example": "IT-SUPPORT-01"
-                  },
-                  "deviceIpAddress": {
-                    "type": "string",
-                    "description": "Device IP address",
-                    "example": "192.168.1.20"
-                  },
                   "location": {
                     "type": "string",
                     "description": "IT Person location/department",
@@ -2471,7 +2411,6 @@
                   "username",
                   "email",
                   "password",
-                  "ipNumber",
                   "deviceName"
                 ],
                 "properties": {
@@ -2490,21 +2429,6 @@
                     "type": "string",
                     "description": "Password for the User",
                     "example": "SecurePass123!"
-                  },
-                  "ipNumber": {
-                    "type": "string",
-                    "description": "IP number for the User (required)",
-                    "example": "192.168.1.100"
-                  },
-                  "deviceName": {
-                    "type": "string",
-                    "description": "Device name (required)",
-                    "example": "LAPTOP-JOHN-01"
-                  },
-                  "deviceIpAddress": {
-                    "type": "string",
-                    "description": "Device IP address",
-                    "example": "192.168.1.100"
                   },
                   "location": {
                     "type": "string",

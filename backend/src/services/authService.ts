@@ -26,9 +26,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   role: UserRole;
-  ipNumber?: string;
-  deviceName?: string;
-  deviceIpAddress?: string;
   businessType?: "small_business" | "medium_business" | "large_business";
   accountLimit?: number;
   expiryDate?: Date;

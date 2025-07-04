@@ -130,18 +130,6 @@ router.post(
  *                 type: string
  *                 description: Password for the Admin
  *                 example: "SecurePass123!"
- *               ipNumber:
- *                 type: string
- *                 description: IP number for the Admin
- *                 example: "192.168.1.10"
- *               deviceName:
- *                 type: string
- *                 description: Device name
- *                 example: "ADMIN-LAPTOP-01"
- *               deviceIpAddress:
- *                 type: string
- *                 description: Device IP address
- *                 example: "192.168.1.10"
  *               location:
  *                 type: string
  *                 description: Admin location/department
@@ -219,18 +207,6 @@ router.post(
  *                 type: string
  *                 description: Password for the IT Person
  *                 example: "SecurePass123!"
- *               ipNumber:
- *                 type: string
- *                 description: IP number for the IT Person
- *                 example: "192.168.1.20"
- *               deviceName:
- *                 type: string
- *                 description: Device name
- *                 example: "IT-SUPPORT-01"
- *               deviceIpAddress:
- *                 type: string
- *                 description: Device IP address
- *                 example: "192.168.1.20"
  *               location:
  *                 type: string
  *                 description: IT Person location/department
@@ -293,7 +269,7 @@ router.post(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [username, email, password, ipNumber, deviceName]
+ *             required: [username, email, password]
  *             properties:
  *               username:
  *                 type: string
@@ -308,18 +284,6 @@ router.post(
  *                 type: string
  *                 description: Password for the User
  *                 example: "SecurePass123!"
- *               ipNumber:
- *                 type: string
- *                 description: IP number for the User (required)
- *                 example: "192.168.1.100"
- *               deviceName:
- *                 type: string
- *                 description: Device name (required)
- *                 example: "LAPTOP-JOHN-01"
- *               deviceIpAddress:
- *                 type: string
- *                 description: Device IP address
- *                 example: "192.168.1.100"
  *               location:
  *                 type: string
  *                 description: User location/department

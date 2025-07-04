@@ -20,9 +20,6 @@ export interface CreateUserRequest {
   email: string;
   password: string;
   role: UserRole;
-  ipNumber?: string;
-  deviceName?: string;
-  deviceIpAddress?: string;
   businessType?: BusinessType;
   accountLimit?: number;
   expiryDate?: Date;
@@ -32,9 +29,6 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   username?: string;
   email?: string;
-  ipNumber?: string;
-  deviceName?: string;
-  deviceIpAddress?: string;
   businessType?: BusinessType;
   accountLimit?: number;
   expiryDate?: Date;
@@ -136,16 +130,6 @@ export class UserService {
       userData.accountLimit = ACCOUNT_LIMITS[userData.businessType];
     }
 
-    // Validate required fields for user role
-    if (userData.role === "user") {
-      if (!userData.ipNumber || !userData.deviceName) {
-        throw createError(
-          "IP Number and Device Name are required for user accounts",
-          HTTP_STATUS.BAD_REQUEST
-        );
-      }
-    }
-
     return this.createUser(userData, creatorId);
   }
 
@@ -183,9 +167,6 @@ export class UserService {
         email: userData.email,
         password: hashedPassword,
         role: userData.role,
-        ipNumber: userData.ipNumber || null,
-        deviceName: userData.deviceName || null,
-        deviceIpAddress: userData.deviceIpAddress || null,
         businessType: userData.businessType || null,
         accountLimit: accountLimit || null,
         expiryDate: userData.expiryDate || null,
@@ -237,11 +218,6 @@ export class UserService {
       data: {
         ...(updateData.username && { username: updateData.username }),
         ...(updateData.email && { email: updateData.email }),
-        ...(updateData.ipNumber && { ipNumber: updateData.ipNumber }),
-        ...(updateData.deviceName && { deviceName: updateData.deviceName }),
-        ...(updateData.deviceIpAddress && {
-          deviceIpAddress: updateData.deviceIpAddress,
-        }),
         ...(updateData.businessType && {
           businessType: updateData.businessType,
         }),
@@ -305,9 +281,6 @@ export class UserService {
           username: true,
           email: true,
           role: true,
-          ipNumber: true,
-          deviceName: true,
-          deviceIpAddress: true,
           businessType: true,
           accountLimit: true,
           expiryDate: true,
@@ -468,9 +441,6 @@ export class UserService {
         username: true,
         email: true,
         role: true,
-        ipNumber: true,
-        deviceName: true,
-        deviceIpAddress: true,
         businessType: true,
         accountLimit: true,
         expiryDate: true,

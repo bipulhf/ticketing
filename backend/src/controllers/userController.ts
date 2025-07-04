@@ -108,16 +108,6 @@ export class UserController {
         });
       }
 
-      // Validate required fields for regular users
-      if (!userData.ipNumber || !userData.deviceName) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({
-          success: false,
-          error: {
-            message: "IP Number and Device Name are required for users",
-          },
-        });
-      }
-
       const user = await UserService.createUserWithValidation(
         userData,
         creatorId
@@ -232,9 +222,6 @@ export class UserController {
             email: true,
             role: true,
             isActive: true,
-            ipNumber: true,
-            deviceName: true,
-            deviceIpAddress: true,
             businessType: true,
             accountLimit: true,
             expiryDate: true,
