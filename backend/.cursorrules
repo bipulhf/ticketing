@@ -1,0 +1,75 @@
+[project]
+name = "IT Help Desk Ticketing Software"
+type = "backend"
+language = "node"
+framework = "express"
+orm = "prisma"
+
+[directories]
+models = "prisma"
+controllers = "src/controllers"
+routes = "src/routes"
+middlewares = "src/middlewares"
+services = "src/services"
+utils = "src/utils"
+uploads = "src/uploads"
+auth = "src/middlewares/auth"
+
+[database]
+provider = "postgresql"
+schema = "prisma/schema.prisma"
+
+[auth]
+strategy = "jwt"
+roles = ["system_owner", "super_admin", "admin", "it_person", "user"]
+roleBasedAccess = true
+
+[filePatterns]
+controller = "*Controller.ts"
+route = "*Routes.ts"
+service = "*Service.ts"
+middleware = "*Middleware.ts"
+model = "*.prisma"
+
+[features]
+fileUploads = true
+attachmentsPerTicket = "multiple"
+dateFiltering = true
+roleBasedPermissions = true
+dashboardMetrics = true
+archiving = true
+queryOptimization = true
+
+[archiving]
+archiveThreshold = "6m"
+archiveDatabase = "archive_db"
+
+[queryOptimization]
+cloneBeforeExecution = true
+
+[ticket]
+fields = ["id", "description", "attachments[]", "createdBy", "status", "createdAt", "updatedAt"]
+statuses = ["pending", "solved"]
+canBeCreatedBy = ["user", "it_person"]
+canBeClosedBy = ["it_person"]
+notesRequiredOnClose = true
+
+[accountLimits]
+small_business = 300
+medium_business = 700
+large_business = 3000
+
+[expiryManagement]
+appliesTo = "super_admin"
+actionOnExpiry = "prevent_login"
+
+[dashboard]
+super_admin = ["admin_count", "it_person_count", "user_count", "ticket_stats"]
+admin = ["ticket_stats", "user_count", "it_person_count"]
+system_owner = ["super_admins_overview", "account_expiry"]
+dateFilter = true
+
+[upload]
+maxSizeMB = 25
+storagePath = "src/uploads/tickets"
+acceptedFormats = ["image/jpeg", "image/png", "application/pdf", "text/plain"]

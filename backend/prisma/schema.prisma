@@ -1,0 +1,120 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+        
+enum UserRole {
+  system_owner
+  super_admin
+  admin
+  it_person
+  user
+}
+
+enum BusinessType {
+  small_business
+  medium_business
+  large_business
+}
+
+enum TicketStatus {
+  pending
+  solved
+}
+
+model User {
+  id            String      @id @default(cuid())
+  username      String      @unique
+  email         String      @unique
+  password      String
+  role          UserRole
+  isActive      Boolean     @default(true)
+  
+  // Relationships
+  createdById   String?
+  createdBy     User?       @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdUsers  User[]      @relation("UserCreatedBy")
+  
+  // Super Admin specific fields
+  businessType  BusinessType?
+  accountLimit  Int?
+  expiryDate    DateTime?
+  location      String?
+  
+  // Tickets
+  createdTickets Ticket[]   @relation("TicketCreatedBy")
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@map("users")
+}
+
+model Ticket {
+  id            String        @id @default(cuid())
+  description   String
+  status        TicketStatus  @default(pending)
+  notes         String?       // Notes added when closing ticket
+  
+  // Relationships
+  createdById   String
+  createdBy     User          @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  
+  // Attachments
+  attachments   Attachment[]
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  @@map("tickets")
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  name        String   // Display name for the attachment
+  url         String   // URL/link to the attachment
+  fileType    String?  // Optional file type (e.g., "pdf", "image", "document")
+  
+  // Relationships
+  ticketId    String
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  
+  @@map("attachments")
+}
+
+// Archive models for data older than 6 months
+model ArchivedTicket {
+  id            String        @id
+  description   String
+  status        TicketStatus
+  notes         String?
+  createdById   String
+  createdAt     DateTime
+  updatedAt     DateTime
+  archivedAt    DateTime      @default(now())
+  
+  attachments   ArchivedAttachment[]
+  
+  @@map("archived_tickets")
+}
+
+model ArchivedAttachment {
+  id             String         @id
+  name           String         // Display name for the attachment
+  url            String         // URL/link to the attachment
+  fileType       String?        // Optional file type (e.g., "pdf", "image", "document")
+  ticketId       String
+  ticket         ArchivedTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  createdAt      DateTime
+  archivedAt     DateTime       @default(now())
+  
+  @@map("archived_attachments")
+} 
