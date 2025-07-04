@@ -1,0 +1,85 @@
+import { Archive, Home, Users, Ticket } from "lucide-react";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { UserRole } from "@/types/types";
+import { LogoutButton } from "../login/logout-button";
+
+const generateMenuItems = (role: UserRole) => {
+  if (role === "system_owner") {
+    return [
+      { title: "Home", url: "/dashboard", icon: Home },
+      { title: "Super Admins", url: "/super-admins", icon: Users },
+      { title: "Reports", url: "/reports", icon: Archive },
+    ];
+  } else if (role === "super_admin") {
+    return [
+      { title: "Home", url: "/dashboard", icon: Home },
+      { title: "Admins", url: "/admins", icon: Users },
+      { title: "Tickets", url: "/tickets", icon: Ticket },
+    ];
+  } else if (role === "admin") {
+    return [
+      { title: "Home", url: "/dashboard", icon: Home },
+      { title: "IT Persons", url: "/it-persons", icon: Users },
+      { title: "Users", url: "/users", icon: Users },
+      { title: "Tickets", url: "/tickets", icon: Ticket },
+    ];
+  } else if (role === "it_person") {
+    return [
+      { title: "Home", url: "/dashboard", icon: Home },
+      { title: "Manage Tickets", url: "/tickets", icon: Ticket },
+      { title: "Create User", url: "/create-user", icon: Users },
+    ];
+  } else if (role === "user") {
+    return [
+      { title: "Home", url: "/dashboard", icon: Home },
+      { title: "My Tickets", url: "/tickets", icon: Ticket },
+    ];
+  } else {
+    return [{ title: "Home", url: "/dashboard", icon: Home }];
+  }
+};
+
+export function AppSidebar({ role }: { role: UserRole }) {
+  const items = generateMenuItems(role);
+
+  return (
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>HelpDesk Pro</SidebarGroupLabel>
+          <SidebarGroupContent className="flex flex-col justify-between min-h-[calc(100vh-3rem)]">
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <LogoutButton />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}

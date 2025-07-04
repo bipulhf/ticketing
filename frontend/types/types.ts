@@ -102,6 +102,30 @@ export interface TicketResponse extends ApiResponse {
   ticket: Ticket;
 }
 
+export interface DashboardMetrics {
+  totalUsers: number;
+  adminCount: number;
+  itPersonCount: number;
+  userCount: number;
+  ticketStats: {
+    totalTickets: number;
+    pendingTickets: number;
+    solvedTickets: number;
+  };
+}
+
+export interface SystemOwnerData {
+  superAdminCount?: number;
+  expiringTickets?: number;
+  systemHealth?: string;
+  recentActivities?: Array<{
+    id: string;
+    action: string;
+    timestamp: string;
+    user: string;
+  }>;
+}
+
 export interface PaginationInfo {
   page: number;
   limit: number;
