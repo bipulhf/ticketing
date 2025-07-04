@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  GraduationCap,
   Users,
   Shield,
   FileText,
@@ -16,15 +15,17 @@ import {
   Lock,
   User,
   AlertCircle,
-  ChevronRight,
   BookOpen,
   Award,
   TrendingUp,
   Ticket,
 } from "lucide-react";
 import Link from "next/link";
+import { login } from "@/actions/auth.action";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [credentials, setCredentials] = useState({
     username: "",
     password: "",
@@ -35,48 +36,28 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setError("");
 
-    if (!credentials.username || !credentials.password || !credentials.role) {
+    if (!credentials.username || !credentials.password) {
       setError("Please fill in all required fields");
       return;
     }
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    const response = await login(credentials);
+
+    if (response.error) {
+      setError(response.error);
       setIsLoading(false);
-      const needsOnboarding = credentials.role === "user";
+      return;
+    }
 
-      if (needsOnboarding) {
-        window.location.href = "/onboarding";
-      } else {
-        window.location.href = `/${credentials.role}-dashboard`;
-      }
-    }, 1500);
+    router.push("/dashboard");
+    setIsLoading(false);
   };
-
-  const roleOptions = [
-    {
-      value: "user",
-      label: "Researcher",
-      icon: Users,
-      description: "Apply for grants and manage research projects",
-    },
-    {
-      value: "reviewer",
-      label: "Reviewer",
-      icon: FileText,
-      description: "Review and evaluate applications",
-    },
-    {
-      value: "admin",
-      label: "Administrator",
-      icon: Shield,
-      description: "System management and oversight",
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -180,85 +161,87 @@ export default function LoginPage() {
                   </Alert>
                 )}
 
-                {/* Username Field */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="username"
-                    className="text-sm font-semibold text-slate-700"
-                  >
-                    Username
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input
-                      id="username"
-                      placeholder="Enter your username"
-                      value={credentials.username}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          username: e.target.value,
-                        })
-                      }
-                      className="pl-12 h-12 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl"
-                    />
-                  </div>
-                </div>
-
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="password"
-                    className="text-sm font-semibold text-slate-700"
-                  >
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={credentials.password}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          password: e.target.value,
-                        })
-                      }
-                      className="pl-12 pr-12 h-12 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-100"
-                      onClick={() => setShowPassword(!showPassword)}
+                <form onSubmit={handleLogin} className="space-y-6">
+                  {/* Username Field */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="username"
+                      className="text-sm font-semibold text-slate-700"
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-slate-500" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-slate-500" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Login Button */}
-                <Button
-                  onClick={handleLogin}
-                  disabled={isLoading}
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Signing in...
+                      Username
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                      <Input
+                        id="username"
+                        placeholder="Enter your username"
+                        value={credentials.username}
+                        onChange={(e) =>
+                          setCredentials({
+                            ...credentials,
+                            username: e.target.value,
+                          })
+                        }
+                        className="pl-12 h-12 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl"
+                      />
                     </div>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
+                  </div>
+
+                  {/* Password Field */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="password"
+                      className="text-sm font-semibold text-slate-700"
+                    >
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={credentials.password}
+                        onChange={(e) =>
+                          setCredentials({
+                            ...credentials,
+                            password: e.target.value,
+                          })
+                        }
+                        className="pl-12 pr-12 h-12 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-100"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-slate-500" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-slate-500" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Login Button */}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Signing in...
+                      </div>
+                    ) : (
+                      "Sign In"
+                    )}
+                  </Button>
+                </form>
 
                 {/* Back to Home */}
                 <div className="text-center pt-4">

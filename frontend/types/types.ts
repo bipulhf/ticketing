@@ -1,0 +1,132 @@
+// Enums
+export type UserRole =
+  | "system_owner"
+  | "super_admin"
+  | "admin"
+  | "it_person"
+  | "user";
+export type BusinessType =
+  | "small_business"
+  | "medium_business"
+  | "large_business";
+export type TicketStatus = "pending" | "solved";
+
+// Core Models
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  businessType?: BusinessType;
+  accountLimit?: number;
+  expiryDate?: string; // ISO date-time string
+  location?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  fileType: string;
+  ticketId: string;
+  createdAt: string;
+}
+
+export interface Ticket {
+  id: string;
+  description: string;
+  status: TicketStatus;
+  notes?: string;
+  createdById: string;
+  createdBy: User;
+  attachments: Attachment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Request DTOs
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  businessType?: BusinessType;
+  accountLimit?: number;
+  expiryDate?: string;
+  location?: string;
+}
+
+export interface TicketAttachmentInput {
+  name: string;
+  url: string;
+  fileType: string;
+}
+
+export interface CreateTicketRequest {
+  description: string;
+  attachments?: TicketAttachmentInput[];
+}
+
+export interface UpdateTicketRequest {
+  description?: string;
+  status?: TicketStatus;
+  notes?: string;
+  attachments?: TicketAttachmentInput[];
+}
+
+export interface CloseTicketRequest {
+  notes: string;
+}
+
+// Generic API Response
+export interface ApiResponse {
+  success: boolean;
+  message: string;
+}
+
+// Specific Response Types
+export interface AuthResponse extends ApiResponse {
+  token: string;
+  user: User;
+}
+
+export interface TicketResponse extends ApiResponse {
+  ticket: Ticket;
+}
+
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface TicketsListResponse extends ApiResponse {
+  tickets: Ticket[];
+  pagination: PaginationInfo;
+}
+
+// Error Handling Response
+export interface ErrorData {
+  message: string;
+  code: string;
+  details?: Record<string, any>;
+}
+
+export interface ErrorResponse {
+  success: false;
+  error: ErrorData;
+}
+
+export interface SuccessResponse<T> {
+  success: true;
+  data: T;
+}
