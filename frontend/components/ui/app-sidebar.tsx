@@ -1,17 +1,18 @@
-import { Archive, Home, Users, Ticket, User } from "lucide-react";
+import { Home, Users, Ticket, User } from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { UserRole } from "@/types/types";
 import { LogoutButton } from "../login/logout-button";
+import Link from "next/link";
 
 const generateMenuItems = (role: UserRole) => {
   if (role === "system_owner") {
@@ -61,10 +62,22 @@ export function AppSidebar({ role }: { role: UserRole }) {
 
   return (
     <Sidebar>
+      <SidebarHeader className="my-4">
+        <Link
+          href="/dashboard"
+          className="text-center flex items-center gap-2 justify-center"
+        >
+          <div className="flex justify-center">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">
+              <Ticket className="h-6 w-6 text-white" />
+            </div>
+          </div>
+          <h1 className="text-lg font-bold text-slate-800">HelpDesk Pro</h1>
+        </Link>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>HelpDesk Pro</SidebarGroupLabel>
-          <SidebarGroupContent className="flex flex-col justify-between min-h-[calc(100vh-3rem)]">
+          <SidebarGroupContent className="flex flex-col justify-between min-h-[calc(100vh-7rem)]">
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>

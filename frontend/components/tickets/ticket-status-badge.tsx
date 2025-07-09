@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Clock, AlertCircle } from "lucide-react";
+import { Clock, Check } from "lucide-react";
 
 interface TicketStatusBadgeProps {
   status: "pending" | "solved";
@@ -14,10 +14,10 @@ export function TicketStatusBadge({ status }: TicketStatusBadgeProps) {
       className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
     },
     solved: {
-      label: "In Progress",
-      variant: "default" as const,
-      icon: AlertCircle,
-      className: "bg-blue-100 text-blue-800 hover:bg-blue-100",
+      label: "Solved",
+      variant: "secondary" as const,
+      icon: Check,
+      className: "bg-green-100 text-green-800 hover:bg-green-100",
     },
   };
 

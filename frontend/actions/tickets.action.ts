@@ -128,3 +128,22 @@ export const deleteTicket = async (ticketId: string) => {
   }
   return { error: response.error.message };
 };
+
+export const closeTicket = async (ticketId: string, notes: string) => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const response = await fetchJson(`tickets/${ticketId}/close`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ notes }),
+  });
+
+  if (response.success) {
+    return response.data;
+  }
+  return { error: response.error.message };
+};

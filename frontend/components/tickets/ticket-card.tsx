@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,14 @@ import {
   Check,
 } from "lucide-react";
 import { TicketStatusBadge } from "./ticket-status-badge";
+import { CloseTicketModal } from "./close-ticket-modal";
 import type { Ticket, UserRole } from "@/types/types";
 
 interface TicketCardProps {
   ticket: Ticket;
   onView?: (ticket: Ticket) => void;
   onEdit?: (ticket: Ticket) => void;
+  onTicketUpdate?: () => void;
   userType?: UserRole;
 }
 
@@ -28,8 +31,10 @@ export function TicketCard({
   ticket,
   onView,
   onEdit,
+  onTicketUpdate,
   userType,
 }: TicketCardProps) {
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -84,6 +89,7 @@ export function TicketCard({
                 variant="outline"
                 size="sm"
                 disabled={ticket.status === "solved"}
+                onClick={() => setIsCloseModalOpen(true)}
               >
                 <Check className="h-4 w-4" />{" "}
                 {ticket.status === "solved" ? "Solved" : "Solve"}
@@ -203,6 +209,15 @@ export function TicketCard({
           <span>Updated: {formatDate(ticket.updatedAt)}</span>
         </div>
       </CardContent>
+
+      <CloseTicketModal
+        ticket={ticket}
+        isOpen={isCloseModalOpen}
+        onClose={() => setIsCloseModalOpen(false)}
+        onSuccess={() => {
+          onTicketUpdate?.();
+        }}
+      />
     </Card>
   );
 }
