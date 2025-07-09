@@ -140,16 +140,16 @@ User
 
 ### **Prerequisites**
 
-- Node.js 18+
-- PostgreSQL 14+
+- Node.js 20+
+- PostgreSQL 16+
 - npm or yarn
 
 ### **1-Minute Setup**
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/ticketing-system.git
-cd ticketing-system
+git clone https://github.com/bipulhf/ticketing.git
+cd ticketing
 
 # Backend setup
 cd backend
