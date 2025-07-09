@@ -450,4 +450,52 @@ export class UserService {
       },
     });
   }
+
+  static async getAllUsersByType(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{
+    users: Partial<User>[];
+    pagination: any;
+  }> {
+    const { skip, take } = buildPaginationFilter(page, limit);
+
+    // Simple approach: get all users with pagination
+    const [users, total] = await Promise.all([
+      clonedPrisma().user.findMany({
+        where: { isActive: true },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          businessType: true,
+          accountLimit: true,
+          expiryDate: true,
+          location: true,
+          createdAt: true,
+          updatedAt: true,
+          createdBy: {
+            select: {
+              username: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      clonedPrisma().user.count({
+        where: { isActive: true },
+      }),
+    ]);
+
+    const pagination = calculatePaginationInfo(total, page, limit);
+
+    return {
+      users,
+      pagination,
+    };
+  }
 }

@@ -209,7 +209,6 @@ export class UserController {
         filters.OR = [
           { username: { contains: search, mode: "insensitive" } },
           { email: { contains: search, mode: "insensitive" } },
-          { deviceName: { contains: search, mode: "insensitive" } },
         ];
       }
 
@@ -244,7 +243,7 @@ export class UserController {
         pagination: {
           page: pageNum,
           limit: limitNum,
-          totalCount,
+          total: totalCount,
           totalPages,
           hasNextPage: pageNum < totalPages,
           hasPrevPage: pageNum > 1,
@@ -254,6 +253,43 @@ export class UserController {
           search: search || null,
           isActive: isActive || null,
         },
+      });
+      return;
+    }
+  );
+
+  static getAllUsersByType = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      console.log("Working");
+      const { page = "1", limit = "10" } = req.query as {
+        page?: string;
+        limit?: string;
+      };
+
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+
+      // Validate pagination parameters
+      if (isNaN(pageNum) || pageNum < 1) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          error: { message: "Invalid page number" },
+        });
+      }
+
+      if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          error: { message: "Invalid limit. Must be between 1 and 100" },
+        });
+      }
+
+      const data = await UserService.getAllUsersByType(pageNum, limitNum);
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data,
+        message: "Users retrieved successfully by type",
       });
       return;
     }

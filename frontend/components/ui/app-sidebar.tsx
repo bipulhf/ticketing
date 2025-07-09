@@ -17,32 +17,31 @@ const generateMenuItems = (role: UserRole) => {
   if (role === "system_owner") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
-      { title: "Super Admins", url: "/super-admins", icon: Users },
-      { title: "Reports", url: "/reports", icon: Archive },
+      { title: "Super Admins", url: "/dashboard/users", icon: Users },
+      { title: "Reports", url: "/dashboard/reports", icon: Archive },
     ];
   } else if (role === "super_admin") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
-      { title: "Admins", url: "/admins", icon: Users },
-      { title: "Tickets", url: "/tickets", icon: Ticket },
+      { title: "Admins", url: "/dashboard/users", icon: Users },
+      { title: "Tickets", url: "/dashboard/tickets", icon: Ticket },
     ];
   } else if (role === "admin") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
-      { title: "IT Persons", url: "/it-persons", icon: Users },
-      { title: "Users", url: "/users", icon: Users },
-      { title: "Tickets", url: "/tickets", icon: Ticket },
+      { title: "IT Persons", url: "/dashboard/users", icon: Users },
+      { title: "Tickets", url: "/dashboard/tickets", icon: Ticket },
     ];
   } else if (role === "it_person") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
-      { title: "Manage Tickets", url: "/tickets", icon: Ticket },
-      { title: "Create User", url: "/create-user", icon: Users },
+      { title: "Manage Tickets", url: "/dashboard/tickets", icon: Ticket },
+      { title: "Users", url: "/dashboard/users", icon: Users },
     ];
   } else if (role === "user") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
-      { title: "My Tickets", url: "/tickets", icon: Ticket },
+      { title: "My Tickets", url: "/dashboard/tickets", icon: Ticket },
     ];
   } else {
     return [{ title: "Home", url: "/dashboard", icon: Home }];

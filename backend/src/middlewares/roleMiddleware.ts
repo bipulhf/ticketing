@@ -10,12 +10,15 @@ export const requireRole = (allowedRoles: string[]) => {
     next: NextFunction
   ): void => {
     try {
+      console.log(req.user);
       if (!req.user) {
         throw createError(
           ERROR_MESSAGES.ACCESS_DENIED,
           HTTP_STATUS.UNAUTHORIZED
         );
       }
+
+      console.log(req.user.role);
 
       if (!allowedRoles.includes(req.user.role)) {
         throw createError(

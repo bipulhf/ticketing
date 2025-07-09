@@ -432,6 +432,278 @@ router.get("/my-users", UserController.getMyUsers);
 
 /**
  * @swagger
+ * /api/users/all-by-type:
+ *   get:
+ *     summary: Get all users grouped by type with pagination
+ *     description: Retrieve all users in the system grouped by their role types with pagination support. Only accessible by System Owner for administrative oversight.
+ *     tags: [User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination (applies to each user type separately)
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of users per page for each user type
+ *         example: 10
+ *     responses:
+ *       200:
+ *         description: All users retrieved successfully grouped by type
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         system_owner:
+ *                           type: array
+ *                           items:
+ *                             $ref: '#/components/schemas/User'
+ *                           description: List of system owner users
+ *                         super_admin:
+ *                           type: array
+ *                           items:
+ *                             allOf:
+ *                               - $ref: '#/components/schemas/User'
+ *                               - type: object
+ *                                 properties:
+ *                                   createdBy:
+ *                                     type: object
+ *                                     properties:
+ *                                       username:
+ *                                         type: string
+ *                                         example: "system_owner"
+ *                                       email:
+ *                                         type: string
+ *                                         example: "system@company.com"
+ *                           description: List of super admin users with creator info
+ *                         admin:
+ *                           type: array
+ *                           items:
+ *                             allOf:
+ *                               - $ref: '#/components/schemas/User'
+ *                               - type: object
+ *                                 properties:
+ *                                   createdBy:
+ *                                     type: object
+ *                                     properties:
+ *                                       username:
+ *                                         type: string
+ *                                         example: "superadmin_company1"
+ *                                       email:
+ *                                         type: string
+ *                                         example: "superadmin@company.com"
+ *                           description: List of admin users with creator info
+ *                         it_person:
+ *                           type: array
+ *                           items:
+ *                             allOf:
+ *                               - $ref: '#/components/schemas/User'
+ *                               - type: object
+ *                                 properties:
+ *                                   createdBy:
+ *                                     type: object
+ *                                     properties:
+ *                                       username:
+ *                                         type: string
+ *                                         example: "admin_dept1"
+ *                                       email:
+ *                                         type: string
+ *                                         example: "admin@company.com"
+ *                           description: List of IT person users with creator info
+ *                         user:
+ *                           type: array
+ *                           items:
+ *                             allOf:
+ *                               - $ref: '#/components/schemas/User'
+ *                               - type: object
+ *                                 properties:
+ *                                   createdBy:
+ *                                     type: object
+ *                                     properties:
+ *                                       username:
+ *                                         type: string
+ *                                         example: "itperson_support1"
+ *                                       email:
+ *                                         type: string
+ *                                         example: "itperson@company.com"
+ *                           description: List of regular users with creator info
+ *                         totalCount:
+ *                           type: object
+ *                           properties:
+ *                             system_owner:
+ *                               type: integer
+ *                               example: 1
+ *                               description: Total number of system owners
+ *                             super_admin:
+ *                               type: integer
+ *                               example: 5
+ *                               description: Total number of super admins
+ *                             admin:
+ *                               type: integer
+ *                               example: 15
+ *                               description: Total number of admins
+ *                             it_person:
+ *                               type: integer
+ *                               example: 25
+ *                               description: Total number of IT persons
+ *                             user:
+ *                               type: integer
+ *                               example: 150
+ *                               description: Total number of regular users
+ *                             total:
+ *                               type: integer
+ *                               example: 196
+ *                               description: Total number of all users
+ *                         pagination:
+ *                           type: object
+ *                           properties:
+ *                             system_owner:
+ *                               type: object
+ *                               properties:
+ *                                 total:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 page:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 limit:
+ *                                   type: integer
+ *                                   example: 10
+ *                                 totalPages:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 hasNextPage:
+ *                                   type: boolean
+ *                                   example: false
+ *                                 hasPreviousPage:
+ *                                   type: boolean
+ *                                   example: false
+ *                               description: Pagination info for system owners
+ *                             super_admin:
+ *                               type: object
+ *                               properties:
+ *                                 total:
+ *                                   type: integer
+ *                                   example: 5
+ *                                 page:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 limit:
+ *                                   type: integer
+ *                                   example: 10
+ *                                 totalPages:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 hasNextPage:
+ *                                   type: boolean
+ *                                   example: false
+ *                                 hasPreviousPage:
+ *                                   type: boolean
+ *                                   example: false
+ *                               description: Pagination info for super admins
+ *                             admin:
+ *                               type: object
+ *                               properties:
+ *                                 total:
+ *                                   type: integer
+ *                                   example: 15
+ *                                 page:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 limit:
+ *                                   type: integer
+ *                                   example: 10
+ *                                 totalPages:
+ *                                   type: integer
+ *                                   example: 2
+ *                                 hasNextPage:
+ *                                   type: boolean
+ *                                   example: true
+ *                                 hasPreviousPage:
+ *                                   type: boolean
+ *                                   example: false
+ *                               description: Pagination info for admins
+ *                             it_person:
+ *                               type: object
+ *                               properties:
+ *                                 total:
+ *                                   type: integer
+ *                                   example: 25
+ *                                 page:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 limit:
+ *                                   type: integer
+ *                                   example: 10
+ *                                 totalPages:
+ *                                   type: integer
+ *                                   example: 3
+ *                                 hasNextPage:
+ *                                   type: boolean
+ *                                   example: true
+ *                                 hasPreviousPage:
+ *                                   type: boolean
+ *                                   example: false
+ *                               description: Pagination info for IT persons
+ *                             user:
+ *                               type: object
+ *                               properties:
+ *                                 total:
+ *                                   type: integer
+ *                                   example: 150
+ *                                 page:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 limit:
+ *                                   type: integer
+ *                                   example: 10
+ *                                 totalPages:
+ *                                   type: integer
+ *                                   example: 15
+ *                                 hasNextPage:
+ *                                   type: boolean
+ *                                   example: true
+ *                                 hasPreviousPage:
+ *                                   type: boolean
+ *                                   example: false
+ *                               description: Pagination info for regular users
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - Only System Owner can access this endpoint
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get(
+  "/all-by-type",
+  requireSystemOwner,
+  UserController.getAllUsersByType
+);
+
+/**
+ * @swagger
  * /api/users/{id}:
  *   get:
  *     summary: Get user by ID

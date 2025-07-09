@@ -133,6 +133,25 @@ export interface PaginationInfo {
   totalPages: number;
 }
 
+export interface UsersResponse {
+  success: boolean;
+  message: string;
+  users: User[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+  filters: {
+    role?: string;
+    search?: string;
+    isActive?: string;
+  };
+}
+
 export interface TicketsListResponse extends ApiResponse {
   tickets: Ticket[];
   pagination: PaginationInfo;
