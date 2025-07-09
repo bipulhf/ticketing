@@ -11,20 +11,25 @@ import {
   MapPin,
   Building,
   Mail,
-  Eye,
-  Edit,
   MessageSquare,
+  Check,
 } from "lucide-react";
 import { TicketStatusBadge } from "./ticket-status-badge";
-import type { Ticket } from "@/types/types";
+import type { Ticket, UserRole } from "@/types/types";
 
 interface TicketCardProps {
   ticket: Ticket;
   onView?: (ticket: Ticket) => void;
   onEdit?: (ticket: Ticket) => void;
+  userType?: UserRole;
 }
 
-export function TicketCard({ ticket, onView, onEdit }: TicketCardProps) {
+export function TicketCard({
+  ticket,
+  onView,
+  onEdit,
+  userType,
+}: TicketCardProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -62,7 +67,7 @@ export function TicketCard({ ticket, onView, onEdit }: TicketCardProps) {
     <Card className="hover:shadow-md transition-shadow max-w-3xl">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
+          <div className="space-y-1 my-2">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-sm text-muted-foreground">
                 Ticket #{ticket.id.toUpperCase()}
@@ -73,6 +78,18 @@ export function TicketCard({ ticket, onView, onEdit }: TicketCardProps) {
               {ticket.description}
             </p>
           </div>
+          {userType === "it_person" && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={ticket.status === "solved"}
+              >
+                <Check className="h-4 w-4" />{" "}
+                {ticket.status === "solved" ? "Solved" : "Solve"}
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
 

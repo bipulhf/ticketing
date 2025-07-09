@@ -1,4 +1,5 @@
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { ItPersonDashboard } from "@/components/it-person/it-person-dashboard";
 import { SuperAdminDashboard } from "@/components/super-admin/super-admin-dashboard";
 import { SystemOwnerDashboard } from "@/components/system-owner/system-owner-dashboard";
 import { cookies } from "next/headers";
@@ -14,6 +15,8 @@ export default async function DashboardPage() {
     return <SuperAdminDashboard />;
   } else if (role === "admin") {
     return <AdminDashboard />;
+  } else if (role === "it_person") {
+    return <ItPersonDashboard />;
   }
 
   return <div>Dashboard</div>;

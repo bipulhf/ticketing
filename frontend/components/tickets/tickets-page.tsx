@@ -201,6 +201,7 @@ export default function TicketPage({
               ticket={ticket}
               onView={handleView}
               onEdit={handleEdit}
+              userType={userType}
             />
           ))}
         </div>
