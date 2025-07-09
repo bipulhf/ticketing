@@ -286,6 +286,7 @@ export class UserService {
           expiryDate: true,
           location: true,
           createdAt: true,
+          isActive: true,
         },
       }),
       clonedPrisma().user.count({
@@ -441,6 +442,7 @@ export class UserService {
         username: true,
         email: true,
         role: true,
+        isActive: true,
         businessType: true,
         accountLimit: true,
         expiryDate: true,
@@ -469,6 +471,7 @@ export class UserService {
           username: true,
           email: true,
           role: true,
+          isActive: true,
           businessType: true,
           accountLimit: true,
           expiryDate: true,
@@ -497,5 +500,122 @@ export class UserService {
       users,
       pagination,
     };
+  }
+
+  static async updateSelfProfile(
+    userId: string,
+    updateData: {
+      username?: string;
+      email?: string;
+      location?: string;
+    }
+  ): Promise<User> {
+    // Check if user exists
+    const existingUser = await clonedPrisma().user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Check if username or email already exists (if being updated)
+    if (updateData.username || updateData.email) {
+      const conflictConditions = [];
+
+      if (
+        updateData.username &&
+        updateData.username !== existingUser.username
+      ) {
+        conflictConditions.push({ username: updateData.username });
+      }
+
+      if (updateData.email && updateData.email !== existingUser.email) {
+        conflictConditions.push({ email: updateData.email });
+      }
+
+      if (conflictConditions.length > 0) {
+        const conflictingUser = await clonedPrisma().user.findFirst({
+          where: {
+            OR: conflictConditions,
+            NOT: { id: userId },
+          },
+        });
+
+        if (conflictingUser) {
+          throw createError(
+            "Username or email already exists",
+            HTTP_STATUS.CONFLICT
+          );
+        }
+      }
+    }
+
+    // Update user profile
+    const updatedUser = await clonedPrisma().user.update({
+      where: { id: userId },
+      data: {
+        ...(updateData.username && { username: updateData.username }),
+        ...(updateData.email && { email: updateData.email }),
+        ...(updateData.location && { location: updateData.location }),
+        updatedAt: new Date(),
+      },
+    });
+
+    return updatedUser;
+  }
+
+  static async updateSelfPassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<User> {
+    // Check if user exists
+    const user = await clonedPrisma().user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Verify current password
+    const { comparePassword } = await import("../utils/password");
+    const isCurrentPasswordValid = await comparePassword(
+      currentPassword,
+      user.password
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw createError(
+        "Current password is incorrect",
+        HTTP_STATUS.BAD_REQUEST
+      );
+    }
+
+    // Validate new password strength
+    const { validatePasswordStrength } = await import("../utils/password");
+    const passwordValidation = validatePasswordStrength(newPassword);
+
+    if (!passwordValidation.isValid) {
+      throw createError(
+        `Password validation failed: ${passwordValidation.errors.join(", ")}`,
+        HTTP_STATUS.BAD_REQUEST
+      );
+    }
+
+    // Hash new password
+    const hashedNewPassword = await hashPassword(newPassword);
+
+    // Update password
+    const updatedUser = await clonedPrisma().user.update({
+      where: { id: userId },
+      data: {
+        password: hashedNewPassword,
+        updatedAt: new Date(),
+      },
+    });
+
+    return updatedUser;
   }
 }

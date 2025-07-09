@@ -1,4 +1,4 @@
-import { Archive, Home, Users, Ticket } from "lucide-react";
+import { Archive, Home, Users, Ticket, User } from "lucide-react";
 
 import {
   Sidebar,
@@ -19,32 +19,40 @@ const generateMenuItems = (role: UserRole) => {
       { title: "Home", url: "/dashboard", icon: Home },
       { title: "Users", url: "/dashboard/users", icon: Users },
       { title: "Tickets", url: "/dashboard/tickets", icon: Ticket },
+      { title: "Profile", url: "/dashboard/profile", icon: User },
     ];
   } else if (role === "super_admin") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
       { title: "Admins", url: "/dashboard/users", icon: Users },
       { title: "Tickets", url: "/dashboard/tickets", icon: Ticket },
+      { title: "Profile", url: "/dashboard/profile", icon: User },
     ];
   } else if (role === "admin") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
       { title: "IT Persons", url: "/dashboard/users", icon: Users },
       { title: "Tickets", url: "/dashboard/tickets", icon: Ticket },
+      { title: "Profile", url: "/dashboard/profile", icon: User },
     ];
   } else if (role === "it_person") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
       { title: "Manage Tickets", url: "/dashboard/tickets", icon: Ticket },
       { title: "Users", url: "/dashboard/users", icon: Users },
+      { title: "Profile", url: "/dashboard/profile", icon: User },
     ];
   } else if (role === "user") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
       { title: "My Tickets", url: "/dashboard/tickets", icon: Ticket },
+      { title: "Profile", url: "/dashboard/profile", icon: User },
     ];
   } else {
-    return [{ title: "Home", url: "/dashboard", icon: Home }];
+    return [
+      { title: "Home", url: "/dashboard", icon: Home },
+      { title: "Profile", url: "/dashboard/profile", icon: User },
+    ];
   }
 };
 

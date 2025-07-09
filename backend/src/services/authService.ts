@@ -17,6 +17,8 @@ export interface LoginResponse {
     username: string;
     email: string;
     role: UserRole;
+    isActive: boolean;
+    expiryDate: Date | null;
   };
   token: string;
 }
@@ -97,6 +99,8 @@ export class AuthService {
         username: user.username,
         email: user.email,
         role: user.role,
+        isActive: user.isActive,
+        expiryDate: user.expiryDate,
       },
       token,
     };

@@ -170,3 +170,48 @@ export const deleteUser = async (userId: string) => {
   }
   return { error: response.error.message };
 };
+
+export const updateSelfProfile = async (userData: {
+  username?: string;
+  email?: string;
+  location?: string;
+}) => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const response = await fetchJson("users/self/profile", {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  });
+
+  if (response.success) {
+    return response.data;
+  }
+  return { error: response.error.message };
+};
+
+export const updateSelfPassword = async (passwordData: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const response = await fetchJson("users/self/password", {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(passwordData),
+  });
+
+  if (response.success) {
+    return response.data;
+  }
+  return { error: response.error.message };
+};

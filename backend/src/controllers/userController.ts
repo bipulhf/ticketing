@@ -339,4 +339,66 @@ export class UserController {
       return;
     }
   );
+
+  static updateSelfProfile = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not authenticated" },
+        });
+      }
+
+      const { username, email, location } = req.body;
+
+      const user = await UserService.updateSelfProfile(userId, {
+        username,
+        email,
+        location,
+      });
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        user,
+        message: "Profile updated successfully",
+      });
+      return;
+    }
+  );
+
+  static updateSelfPassword = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not authenticated" },
+        });
+      }
+
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          error: { message: "Current password and new password are required" },
+        });
+      }
+
+      const user = await UserService.updateSelfPassword(
+        userId,
+        currentPassword,
+        newPassword
+      );
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        message: "Password updated successfully",
+      });
+      return;
+    }
+  );
 }
