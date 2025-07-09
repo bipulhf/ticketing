@@ -24,14 +24,14 @@ const generateMenuItems = (role: UserRole) => {
   } else if (role === "super_admin") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
-      { title: "Admins", url: "/dashboard/users", icon: Users },
+      { title: "Users", url: "/dashboard/users", icon: Users },
       { title: "Tickets", url: "/dashboard/tickets", icon: Ticket },
       { title: "Profile", url: "/dashboard/profile", icon: User },
     ];
   } else if (role === "admin") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
-      { title: "IT Persons", url: "/dashboard/users", icon: Users },
+      { title: "Users", url: "/dashboard/users", icon: Users },
       { title: "Tickets", url: "/dashboard/tickets", icon: Ticket },
       { title: "Profile", url: "/dashboard/profile", icon: User },
     ];
