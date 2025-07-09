@@ -1,5 +1,5 @@
 import { Ticket, TicketStatus } from "@prisma/client";
-import { clonedPrisma } from "../config/prisma";
+import { prisma } from "../config/prisma";
 import { createError } from "../middlewares/errorMiddleware";
 import {
   HTTP_STATUS,
@@ -43,7 +43,7 @@ export class TicketService {
     } = ticketData;
 
     // Validate that the user exists and can create tickets
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: createdById },
       select: {
         id: true,
@@ -71,7 +71,7 @@ export class TicketService {
       attachments.length > 0 ? sanitizeAttachmentData(attachments) : [];
 
     // Create ticket with attachments in a transaction
-    const ticket = await clonedPrisma().$transaction(async (tx) => {
+    const ticket = await prisma.$transaction(async (tx) => {
       const newTicket = await tx.ticket.create({
         data: {
           description,
@@ -129,7 +129,7 @@ export class TicketService {
   }
 
   static async getTicketById(ticketId: string, userId: string) {
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
     });
@@ -138,7 +138,7 @@ export class TicketService {
       throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     }
 
-    const ticket = await clonedPrisma().ticket.findUnique({
+    const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
       include: {
         createdBy: {
@@ -184,7 +184,7 @@ export class TicketService {
       ip_number,
     } = updateData;
 
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: updaterId },
       select: { role: true },
     });
@@ -193,7 +193,7 @@ export class TicketService {
       throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     }
 
-    const ticket = await clonedPrisma().ticket.findUnique({
+    const ticket = await prisma.ticket.findUnique({
       where: { id: ticketId },
     });
 
@@ -221,7 +221,7 @@ export class TicketService {
     }
 
     // Update ticket
-    const updatedTicket = await clonedPrisma().ticket.update({
+    const updatedTicket = await prisma.ticket.update({
       where: { id: ticketId },
       data: {
         ...(description && { description }),
@@ -252,7 +252,7 @@ export class TicketService {
     page: number = 1,
     limit: number = 10
   ) {
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
     });
@@ -284,7 +284,7 @@ export class TicketService {
     }
 
     const [tickets, total] = await Promise.all([
-      clonedPrisma().ticket.findMany({
+      prisma.ticket.findMany({
         where,
         skip,
         take: limit,
@@ -301,7 +301,7 @@ export class TicketService {
           attachments: true,
         },
       }),
-      clonedPrisma().ticket.count({ where }),
+      prisma.ticket.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -329,7 +329,7 @@ export class TicketService {
     }
 
     // For IT persons and above, check if the ticket creator is in their hierarchy
-    const ticketCreator = await clonedPrisma().user.findUnique({
+    const ticketCreator = await prisma.user.findUnique({
       where: { id: ticket.createdById },
       select: {
         systemOwnerId: true,

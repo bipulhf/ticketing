@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { verifyToken, getTokenFromHeader, JwtPayload } from "../utils/jwt";
 import { createError } from "./errorMiddleware";
 import { HTTP_STATUS, ERROR_MESSAGES } from "../utils/constants";
-import { clonedPrisma } from "../config/prisma";
+import { prisma } from "../config/prisma";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -30,7 +30,7 @@ export const authenticate = async (
     const decoded: JwtPayload = verifyToken(token);
 
     // Get user from database to ensure they still exist and are active
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
         id: true,
@@ -82,7 +82,7 @@ export const optionalAuth = async (
     if (token) {
       const decoded: JwtPayload = verifyToken(token);
 
-      const user = await clonedPrisma().user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
         select: {
           id: true,

@@ -3,7 +3,7 @@ import { UserService, CreateUserRequest } from "../services/userService";
 import { asyncHandler } from "../middlewares/errorMiddleware";
 import { HTTP_STATUS } from "../utils/constants";
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
-import { clonedPrisma } from "../config/prisma";
+import { prisma } from "../config/prisma";
 
 export class UserController {
   static createSuperAdmin = asyncHandler(
@@ -223,7 +223,7 @@ export class UserController {
       }
 
       const [users, totalCount] = await Promise.all([
-        clonedPrisma().user.findMany({
+        prisma.user.findMany({
           where: filters,
           select: {
             id: true,
@@ -242,7 +242,7 @@ export class UserController {
           skip: offset,
           take: limitNum,
         }),
-        clonedPrisma().user.count({ where: filters }),
+        prisma.user.count({ where: filters }),
       ]);
 
       const totalPages = Math.ceil(totalCount / limitNum);

@@ -1,5 +1,5 @@
 import { User, UserRole } from "@prisma/client";
-import { clonedPrisma } from "../config/prisma";
+import { prisma } from "../config/prisma";
 import { hashPassword, comparePassword } from "../utils/password";
 import { generateToken } from "../utils/jwt";
 import { createError } from "../middlewares/errorMiddleware";
@@ -40,7 +40,7 @@ export class AuthService {
     const { username, password } = loginData;
 
     // Find user by username
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { username },
       select: {
         id: true,
@@ -122,7 +122,7 @@ export class AuthService {
     } = registerData;
 
     // Check if username or email already exists
-    const existingUser = await clonedPrisma().user.findFirst({
+    const existingUser = await prisma.user.findFirst({
       where: {
         OR: [{ username }, { email }],
       },
@@ -139,7 +139,7 @@ export class AuthService {
     const hashedPassword = await hashPassword(password);
 
     // Create user
-    const newUser = await clonedPrisma().user.create({
+    const newUser = await prisma.user.create({
       data: {
         username,
         email,
@@ -172,13 +172,13 @@ export class AuthService {
   }
 
   static async validateUser(userId: string): Promise<User | null> {
-    return await clonedPrisma().user.findUnique({
+    return await prisma.user.findUnique({
       where: { id: userId },
     });
   }
 
   static async refreshToken(userId: string): Promise<string> {
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,

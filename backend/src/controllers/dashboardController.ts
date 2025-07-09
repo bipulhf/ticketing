@@ -3,7 +3,7 @@ import { UserService } from "../services/userService";
 import { asyncHandler } from "../middlewares/errorMiddleware";
 import { HTTP_STATUS } from "../utils/constants";
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
-import { clonedPrisma } from "../config/prisma";
+import { prisma } from "../config/prisma";
 import { buildDateFilter, buildPrismaDateFilter } from "../utils/filter";
 
 export class DashboardController {
@@ -72,7 +72,7 @@ export class DashboardController {
       const dateFilterCondition = buildPrismaDateFilter(dateFilter);
 
       // Get Super Admin accounts with expiry information
-      const superAdmins = await clonedPrisma().user.findMany({
+      const superAdmins = await prisma.user.findMany({
         where: {
           role: "super_admin",
           isActive: true,
@@ -124,12 +124,12 @@ export class DashboardController {
 
       const [totalAccounts, totalTickets, pendingTickets, solvedTickets] =
         await Promise.all([
-          clonedPrisma().user.count({ where: { isActive: true } }),
-          clonedPrisma().ticket.count({ where: dateFilterCondition }),
-          clonedPrisma().ticket.count({
+          prisma.user.count({ where: { isActive: true } }),
+          prisma.ticket.count({ where: dateFilterCondition }),
+          prisma.ticket.count({
             where: { status: "pending", ...dateFilterCondition },
           }),
-          clonedPrisma().ticket.count({
+          prisma.ticket.count({
             where: { status: "solved", ...dateFilterCondition },
           }),
         ]);
@@ -190,7 +190,7 @@ export class DashboardController {
       );
 
       // Get account utilization for Super Admin
-      const user = await clonedPrisma().user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
           accountLimit: true,

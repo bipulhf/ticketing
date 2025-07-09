@@ -1,5 +1,5 @@
 import { User, UserRole, BusinessType } from "@prisma/client";
-import { clonedPrisma } from "../config/prisma";
+import { prisma } from "../config/prisma";
 import { hashPassword } from "../utils/password";
 import { createError } from "../middlewares/errorMiddleware";
 import {
@@ -55,7 +55,7 @@ export class UserService {
     creatorId: string
   ): Promise<User> {
     // Get creator information to validate permissions and limits
-    const creator = await clonedPrisma().user.findUnique({
+    const creator = await prisma.user.findUnique({
       where: { id: creatorId },
       select: {
         id: true,
@@ -96,7 +96,7 @@ export class UserService {
 
     // Check account limits for super_admin creating accounts
     if (creator.role === "super_admin" && creator.accountLimit) {
-      const createdUsersCount = await clonedPrisma().user.count({
+      const createdUsersCount = await prisma.user.count({
         where: {
           createdById: creatorId,
           isActive: true,
@@ -138,7 +138,7 @@ export class UserService {
     creatorId: string
   ): Promise<User> {
     // Check if username or email already exists
-    const existingUser = await clonedPrisma().user.findFirst({
+    const existingUser = await prisma.user.findFirst({
       where: {
         OR: [{ username: userData.username }, { email: userData.email }],
       },
@@ -152,7 +152,7 @@ export class UserService {
     }
 
     // Get creator information to determine hierarchy relationships
-    const creator = await clonedPrisma().user.findUnique({
+    const creator = await prisma.user.findUnique({
       where: { id: creatorId },
       select: {
         id: true,
@@ -223,7 +223,7 @@ export class UserService {
     }
 
     // Create user
-    const newUser = await clonedPrisma().user.create({
+    const newUser = await prisma.user.create({
       data: {
         username: userData.username,
         email: userData.email,
@@ -247,12 +247,12 @@ export class UserService {
     updateData: UpdateUserRequest,
     updaterId: string
   ): Promise<User> {
-    const updater = await clonedPrisma().user.findUnique({
+    const updater = await prisma.user.findUnique({
       where: { id: updaterId },
       select: { role: true },
     });
 
-    const targetUser = await clonedPrisma().user.findUnique({
+    const targetUser = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
     });
@@ -276,7 +276,7 @@ export class UserService {
     }
 
     // Update user
-    const updatedUser = await clonedPrisma().user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         ...(updateData.username && { username: updateData.username }),
@@ -297,12 +297,12 @@ export class UserService {
   }
 
   static async deleteUser(userId: string, deleterId: string): Promise<void> {
-    const deleter = await clonedPrisma().user.findUnique({
+    const deleter = await prisma.user.findUnique({
       where: { id: deleterId },
       select: { role: true },
     });
 
-    const targetUser = await clonedPrisma().user.findUnique({
+    const targetUser = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
     });
@@ -320,7 +320,7 @@ export class UserService {
     }
 
     // Soft delete by setting isActive to false
-    await clonedPrisma().user.update({
+    await prisma.user.update({
       where: { id: userId },
       data: { isActive: false },
     });
@@ -334,7 +334,7 @@ export class UserService {
     const { skip, take } = buildPaginationFilter(page, limit);
 
     const [users, total] = await Promise.all([
-      clonedPrisma().user.findMany({
+      prisma.user.findMany({
         where: { createdById: creatorId, isActive: true },
         skip,
         take,
@@ -352,7 +352,7 @@ export class UserService {
           isActive: true,
         },
       }),
-      clonedPrisma().user.count({
+      prisma.user.count({
         where: { createdById: creatorId, isActive: true },
       }),
     ]);
@@ -370,7 +370,7 @@ export class UserService {
     startDate?: string,
     endDate?: string
   ): Promise<DashboardMetrics> {
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
     });
@@ -395,21 +395,21 @@ export class UserService {
     // Get user counts
     const [adminCount, itPersonCount, userCount, superAdminCount] =
       await Promise.all([
-        clonedPrisma().user.count({
+        prisma.user.count({
           where: {
             role: "admin",
             isActive: true,
             ...userFilter,
           },
         }),
-        clonedPrisma().user.count({
+        prisma.user.count({
           where: {
             role: "it_person",
             isActive: true,
             ...userFilter,
           },
         }),
-        clonedPrisma().user.count({
+        prisma.user.count({
           where: {
             role: "user",
             isActive: true,
@@ -417,7 +417,7 @@ export class UserService {
           },
         }),
         user.role === "system_owner"
-          ? clonedPrisma().user.count({
+          ? prisma.user.count({
               where: {
                 role: "super_admin",
                 isActive: true,
@@ -429,20 +429,20 @@ export class UserService {
 
     // Get ticket stats - tickets from users in the hierarchy
     const [totalTickets, pendingTickets, solvedTickets] = await Promise.all([
-      clonedPrisma().ticket.count({
+      prisma.ticket.count({
         where: {
           ...dateFilterCondition,
           createdBy: userFilter,
         },
       }),
-      clonedPrisma().ticket.count({
+      prisma.ticket.count({
         where: {
           status: "pending",
           ...dateFilterCondition,
           createdBy: userFilter,
         },
       }),
-      clonedPrisma().ticket.count({
+      prisma.ticket.count({
         where: {
           status: "solved",
           ...dateFilterCondition,
@@ -467,13 +467,13 @@ export class UserService {
   }
 
   static async getUser(userId: string): Promise<User | null> {
-    return await clonedPrisma().user.findUnique({
+    return await prisma.user.findUnique({
       where: { id: userId },
     });
   }
 
   static async getUserProfile(userId: string): Promise<Partial<User> | null> {
-    return await clonedPrisma().user.findUnique({
+    return await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -502,7 +502,7 @@ export class UserService {
 
     // Simple approach: get all users with pagination
     const [users, total] = await Promise.all([
-      clonedPrisma().user.findMany({
+      prisma.user.findMany({
         where: { isActive: true },
         select: {
           id: true,
@@ -527,7 +527,7 @@ export class UserService {
         skip,
         take,
       }),
-      clonedPrisma().user.count({
+      prisma.user.count({
         where: { isActive: true },
       }),
     ]);
@@ -549,7 +549,7 @@ export class UserService {
     }
   ): Promise<User> {
     // Check if user exists
-    const existingUser = await clonedPrisma().user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -573,7 +573,7 @@ export class UserService {
       }
 
       if (conflictConditions.length > 0) {
-        const conflictingUser = await clonedPrisma().user.findFirst({
+        const conflictingUser = await prisma.user.findFirst({
           where: {
             OR: conflictConditions,
             NOT: { id: userId },
@@ -590,7 +590,7 @@ export class UserService {
     }
 
     // Update user profile
-    const updatedUser = await clonedPrisma().user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         ...(updateData.username && { username: updateData.username }),
@@ -609,7 +609,7 @@ export class UserService {
     newPassword: string
   ): Promise<User> {
     // Check if user exists
-    const user = await clonedPrisma().user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -646,7 +646,7 @@ export class UserService {
     const hashedNewPassword = await hashPassword(newPassword);
 
     // Update password
-    const updatedUser = await clonedPrisma().user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         password: hashedNewPassword,

@@ -21,7 +21,6 @@ import {
   Star,
   Menu,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function LandingPage() {
@@ -86,27 +85,6 @@ export default function LandingPage() {
       title: "User",
       description:
         "Ticket submission and tracking with self-service portal access",
-    },
-  ];
-
-  const testimonials = [
-    {
-      company: "TechCorp Solutions",
-      quote:
-        "Reduced our ticket resolution time by 60% and improved team efficiency significantly.",
-      rating: 5,
-    },
-    {
-      company: "Global Systems Inc",
-      quote:
-        "The role-based system perfectly matches our organizational structure.",
-      rating: 5,
-    },
-    {
-      company: "Innovation Labs",
-      quote:
-        "Best IT ticketing solution we've implemented. Highly recommended!",
-      rating: 5,
     },
   ];
 
@@ -184,17 +162,6 @@ export default function LandingPage() {
               <Link href="/login">
                 <Button size="lg">Get Started</Button>
               </Link>
-              <Button
-                variant="outline"
-                size="lg"
-                className="px-8 py-3 bg-transparent"
-              >
-                Request Demo
-              </Button>
-            </div>
-
-            <div className="mt-12 text-sm text-gray-500">
-              No credit card required • 14-day free trial • Setup in minutes
             </div>
           </div>
         </div>
@@ -315,15 +282,8 @@ export default function LandingPage() {
               variant="secondary"
               className="shadow-lg hover:shadow-xl"
             >
-              🚀 Start Free Trial
+              Get Started
             </Button>
-          </div>
-          <div className="mt-8 text-sm text-blue-700/80 font-medium flex flex-col sm:flex-row gap-2 justify-center items-center">
-            <span>✨ No credit card required</span>
-            <span className="hidden sm:inline">•</span>
-            <span>14-day free trial</span>
-            <span className="hidden sm:inline">•</span>
-            <span>Setup in minutes</span>
           </div>
         </div>
       </section>

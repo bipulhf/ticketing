@@ -1,4 +1,4 @@
-import { clonedPrisma, archivePrisma } from "../config/prisma";
+import { prisma, archivePrisma } from "../config/prisma";
 import { ARCHIVE_CONFIG } from "../utils/constants";
 
 export class ArchiveService {
@@ -8,7 +8,7 @@ export class ArchiveService {
       archiveDate.getMonth() - ARCHIVE_CONFIG.THRESHOLD_MONTHS
     );
 
-    const oldTickets = await clonedPrisma().ticket.findMany({
+    const oldTickets = await prisma.ticket.findMany({
       where: {
         createdAt: {
           lt: archiveDate,
@@ -56,7 +56,7 @@ export class ArchiveService {
     }
 
     // Delete from main database
-    await clonedPrisma().ticket.deleteMany({
+    await prisma.ticket.deleteMany({
       where: {
         id: {
           in: oldTickets.map((ticket) => ticket.id),
