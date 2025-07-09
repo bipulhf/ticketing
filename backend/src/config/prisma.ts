@@ -29,10 +29,9 @@ const createArchivePrismaClient = () => {
     datasources: {
       db: {
         url:
-          (process.env.ARCHIVE_DATABASE_URL ||
-            process.env.DATABASE_URL ||
-            "postgresql://localhost:5432/helpdesk_archive_db") +
-          "?connection_limit=5&pool_timeout=60",
+          process.env.ARCHIVE_DATABASE_URL ||
+          process.env.DATABASE_URL ||
+          "postgresql://localhost:5432/helpdesk_archive_db",
       },
     },
     log:

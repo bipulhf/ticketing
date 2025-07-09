@@ -1,0 +1,64 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17
+    container_name: ticketing_system
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ticketing_system
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ticketing_system_network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ticketing_system_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://postgres:password123@postgres:5432/ticketing_system"
+      DIRECT_URL: "postgresql://postgres:password123@postgres:5432/ticketing_system"
+      JWT_SECRET: "7df276c6ea7e2fb798e1a7bcb2fa6ad8b4e9693231c66e1846ca42eed7c2a613"
+      PORT: 5000
+      OPENSSL_CONF: /dev/null
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    networks:
+      - ticketing_system_network
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ticketing_system_frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_URL: "http://backend:5000"
+      UPLOADTHING_TOKEN: "eyJhcGlLZXkiOiJza19saXZlX2NiMWU5N2ViOWMzNGI4MGNjOTA5MGQxNzUwZGYzYzlhZjQxMjM1Y2E3ODQzY2RjMGM4ZGI5Y2VkMGViOGYzNTciLCJhcHBJZCI6ImtrMDYwdnZyaWIiLCJyZWdpb25zIjpbInNlYTEiXX0="
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - ticketing_system_network
+
+volumes:
+  postgres_data:
+
+networks:
+  ticketing_system_network:
+    driver: bridge

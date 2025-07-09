@@ -105,19 +105,15 @@ export default function TicketPage({
     if (filters.search) {
       params.set("search", filters.search);
     }
-
     if (filters.status && filters.status !== "all") {
       params.set("status", filters.status);
     }
-
     if (filters.fromDate) {
       params.set("fromDate", format(filters.fromDate, "yyyy-MM-dd"));
     }
-
     if (filters.toDate) {
       params.set("toDate", format(filters.toDate, "yyyy-MM-dd"));
     }
-
     if (filters.page && filters.page > 1) {
       params.set("page", filters.page.toString());
     }
@@ -448,7 +444,10 @@ export default function TicketPage({
 
       <CreateTicketModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          window.location.reload();
+        }}
         onSuccess={handleTicketCreated}
       />
     </div>

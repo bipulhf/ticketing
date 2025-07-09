@@ -270,7 +270,6 @@ export class UserController {
 
   static getAllUsersByType = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      console.log("Working");
       const { page = "1", limit = "10" } = req.query as {
         page?: string;
         limit?: string;

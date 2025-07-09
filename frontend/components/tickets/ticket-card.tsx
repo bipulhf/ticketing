@@ -14,7 +14,6 @@ import {
   Mail,
   MessageSquare,
   Check,
-  Eye,
   RotateCcw,
   Loader2,
 } from "lucide-react";
@@ -23,7 +22,6 @@ import { CloseTicketModal } from "./close-ticket-modal";
 import { reopenTicket } from "@/actions/tickets.action";
 import { toast } from "sonner";
 import type { Ticket, UserRole } from "@/types/types";
-import { useRouter } from "next/navigation";
 
 interface TicketCardProps {
   ticket: Ticket;
@@ -41,7 +39,6 @@ export function TicketCard({
   userType,
 }: TicketCardProps) {
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
-  const router = useRouter();
   const [isReopening, setIsReopening] = useState(false);
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -87,7 +84,7 @@ export function TicketCard({
       } else {
         toast.success("Ticket reopened successfully");
         onTicketUpdate?.();
-        router.refresh();
+        window.location.reload();
       }
     } catch (error) {
       toast.error("Failed to reopen ticket");
@@ -259,7 +256,7 @@ export function TicketCard({
         onClose={() => setIsCloseModalOpen(false)}
         onSuccess={() => {
           onTicketUpdate?.();
-          router.refresh();
+          window.location.reload();
         }}
       />
     </Card>

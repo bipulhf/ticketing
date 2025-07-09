@@ -319,7 +319,10 @@ function UserFormModal({
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit)}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit(form.getValues());
+            }}
             className="space-y-6"
           >
             {/* Basic Information */}

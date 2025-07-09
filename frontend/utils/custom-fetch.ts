@@ -6,7 +6,7 @@ export async function fetchJson<T = any>(
   options: RequestInit = {}
 ): Promise<SuccessResponse<T> | ErrorResponse> {
   try {
-    const response = await fetch(`http://localhost:5000/api/${url}`, {
+    const response = await fetch(`${process.env.API_URL}/api/${url}`, {
       ...options,
       headers: {
         "Content-Type": "application/json",
