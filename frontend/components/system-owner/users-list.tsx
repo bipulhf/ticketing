@@ -73,6 +73,7 @@ import {
   UserFormModal,
   UserFormValues,
 } from "@/components/users/user-modal";
+import { toast } from "sonner";
 
 interface Filters {
   search: string;
@@ -190,7 +191,9 @@ export function SystemOwnerUsersList() {
   };
 
   // Form submission handlers
-  const handleCreateUser = async (formData: UserFormValues) => {
+  const handleCreateUser = async (
+    formData: UserFormValues
+  ): Promise<boolean> => {
     setIsSubmitting(true);
     try {
       const userData = {
@@ -201,58 +204,69 @@ export function SystemOwnerUsersList() {
       const result = await createUser(userData);
 
       if (result.error) {
-        setError(result.error);
+        toast.error(result.error);
+        return false;
       } else {
         // Refresh the user list
         fetchUsers();
         setError(null);
+        return true;
       }
     } catch (err) {
-      setError("Failed to create user");
+      toast.error("Failed to create user");
+      return false;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleUpdateUser = async (formData: UserFormValues) => {
-    if (!selectedUser) return;
+  const handleUpdateUser = async (
+    formData: UserFormValues
+  ): Promise<boolean> => {
+    if (!selectedUser) return false;
 
     setIsSubmitting(true);
     try {
       const result = await updateUser(selectedUser.id, formData);
 
       if (result.error) {
-        setError(result.error);
+        toast.error(result.error);
+        return false;
       } else {
         // Refresh the user list
         fetchUsers();
         setSelectedUser(null);
         setShowEditModal(false);
         setError(null);
+        return true;
       }
     } catch (err) {
-      setError("Failed to update user");
+      toast.error("Failed to update user");
+      return false;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
+  const handleDeleteUser = async (userId: string): Promise<boolean> => {
+    if (!confirm("Are you sure you want to delete this user?")) return false;
 
     setIsSubmitting(true);
     try {
       const result = await deleteUser(userId);
 
       if (result.error) {
-        setError(result.error);
+        toast.error(result.error);
+        return false;
       } else {
         // Refresh the user list
         fetchUsers();
         setError(null);
+        return true;
       }
     } catch (err) {
-      setError("Failed to delete user");
+      toast.error("Failed to delete user");
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -474,6 +488,7 @@ export function SystemOwnerUsersList() {
                   </Button>
                 }
                 onSubmit={handleCreateUser}
+                userType="system_owner"
               />
             </div>
           </div>
@@ -916,6 +931,7 @@ export function SystemOwnerUsersList() {
                     </Button>
                   }
                   onSubmit={handleCreateUser}
+                  userType="system_owner"
                 />
               </div>
             )}
@@ -949,6 +965,7 @@ export function SystemOwnerUsersList() {
             }
           }}
           onSubmit={handleUpdateUser}
+          userType="system_owner"
         />
       )}
     </div>

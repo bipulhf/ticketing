@@ -33,13 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Mail, MapPin, UserIcon, Building, Clock } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -51,12 +45,18 @@ import { BusinessType, User, UserRole } from "@/types/types";
 const userFormSchema = z.object({
   username: z.string().min(2, "Username must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  role: z.enum(["system_owner", "super_admin", "admin", "it_person", "user"]),
+  role: z.enum([
+    "system_owner",
+    "super_admin",
+    "admin",
+    "it_person",
+    "user",
+    "",
+  ]),
   isActive: z.boolean(),
   businessType: z
     .enum(["small_business", "medium_business", "large_business"])
     .optional(),
-  accountLimit: z.number().min(0).optional(),
   expiryDate: z.string().optional(),
   location: z.string().optional(),
 });
@@ -248,14 +248,17 @@ function UserFormModal({
   onSubmit,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
+  userType,
 }: {
+  userType: UserRole;
   user?: User;
   trigger?: React.ReactNode;
-  onSubmit: (data: UserFormValues) => void;
+  onSubmit: (data: UserFormValues) => Promise<boolean>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Use controlled props if provided, otherwise use internal state
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -269,7 +272,6 @@ function UserFormModal({
       role: user?.role || "user",
       isActive: user?.isActive ?? true,
       businessType: user?.businessType,
-      accountLimit: user?.accountLimit,
       expiryDate: user?.expiryDate ? user.expiryDate.split("T")[0] : "",
       location: user?.location || "",
     },
@@ -280,21 +282,26 @@ function UserFormModal({
     form.reset({
       username: user?.username || "",
       email: user?.email || "",
-      role: user?.role || "user",
+      role: user?.role || "",
       isActive: user?.isActive ?? true,
       businessType: user?.businessType,
-      accountLimit: user?.accountLimit,
       expiryDate: user?.expiryDate ? user.expiryDate.split("T")[0] : "",
       location: user?.location || "",
     });
   }, [user, form]);
 
-  const handleSubmit = (data: UserFormValues) => {
-    onSubmit(data);
+  const handleSubmit = async (data: UserFormValues) => {
+    setIsSubmitting(true);
+    const result = await onSubmit(data);
+    if (!result) {
+      setIsSubmitting(false);
+      return;
+    }
     setOpen(false);
     if (!user) {
       form.reset();
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -365,20 +372,30 @@ function UserFormModal({
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a role" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="system_owner">
-                            System Owner
-                          </SelectItem>
-                          <SelectItem value="super_admin">
-                            Super Admin
-                          </SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="it_person">IT Person</SelectItem>
-                          <SelectItem value="user">User</SelectItem>
+                          {userType === "system_owner" && (
+                            <SelectItem value="system_owner">
+                              System Owner
+                            </SelectItem>
+                          )}
+                          {userType === "system_owner" && (
+                            <SelectItem value="super_admin">
+                              Super Admin
+                            </SelectItem>
+                          )}
+                          {userType === "super_admin" && (
+                            <SelectItem value="admin">Admin</SelectItem>
+                          )}
+                          {userType === "admin" && (
+                            <SelectItem value="it_person">IT Person</SelectItem>
+                          )}
+                          {userType === "it_person" && (
+                            <SelectItem value="user">User</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -412,109 +429,81 @@ function UserFormModal({
             <Separator />
 
             {/* Business Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Business Information</h3>
+            {form.watch("role") === "super_admin" && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Business Information</h3>
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="businessType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="businessType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Type</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select business type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="small_business">
+                              Small Business
+                            </SelectItem>
+                            <SelectItem value="medium_business">
+                              Medium Business
+                            </SelectItem>
+                            <SelectItem value="large_business">
+                              Large Business
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Business classification
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select business type" />
-                          </SelectTrigger>
+                          <Input placeholder="Enter location" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="small_business">
-                            Small Business
-                          </SelectItem>
-                          <SelectItem value="medium_business">
-                            Medium Business
-                          </SelectItem>
-                          <SelectItem value="large_business">
-                            Large Business
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Optional business classification
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormDescription>User location</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="accountLimit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Account Limit</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="Enter account limit"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value
-                                ? Number(e.target.value)
-                                : undefined
-                            )
-                          }
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Optional account usage limit
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="expiryDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expiry Date</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            {...field}
+                            min={new Date().toISOString().split("T")[0]}
+                          />
+                        </FormControl>
+                        <FormDescription>Account expiry date</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter location" {...field} />
-                      </FormControl>
-                      <FormDescription>Optional user location</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="expiryDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Expiry Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Optional account expiry date
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
+            )}
 
             <DialogFooter>
               <Button
@@ -524,8 +513,12 @@ function UserFormModal({
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                {user ? "Update User" : "Create User"}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? "Submitting..."
+                  : user
+                  ? "Update User"
+                  : "Create User"}
               </Button>
             </DialogFooter>
           </form>
@@ -540,77 +533,3 @@ export { UserInfoModal, UserFormModal };
 
 // Export types for the modal components
 export type { UserFormValues };
-
-// Main Component
-export default function Component({ user }: { user?: User }) {
-  const handleFormSubmit = (data: UserFormValues) => {
-    console.log("Form submitted:", data);
-    // Handle form submission here
-  };
-
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">User Management</h1>
-        <p className="text-muted-foreground">
-          Manage user information with view and edit modals
-        </p>
-      </div>
-
-      <div className="flex justify-center gap-4">
-        {user && (
-          <UserInfoModal
-            user={user}
-            trigger={
-              <Button variant="outline">
-                <UserIcon className="mr-2 h-4 w-4" />
-                View User Info
-              </Button>
-            }
-          />
-        )}
-
-        <UserFormModal
-          trigger={<Button>Create New User</Button>}
-          onSubmit={handleFormSubmit}
-        />
-
-        <UserFormModal
-          user={user}
-          trigger={<Button variant="secondary">Edit User</Button>}
-          onSubmit={handleFormSubmit}
-        />
-      </div>
-
-      {user && (
-        <Card className="min-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5" />
-              User Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p>
-                <strong>Username:</strong> {user.username}
-              </p>
-              <p>
-                <strong>Email:</strong> {user.email}
-              </p>
-              <p>
-                <strong>Role:</strong> {formatRole(user.role)}
-              </p>
-              <div className="flex items-center gap-2">
-                <strong>Status:</strong>
-                <Badge variant={user.isActive ? "default" : "destructive"}>
-                  {user.isActive ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
