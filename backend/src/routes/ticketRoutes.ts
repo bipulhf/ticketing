@@ -433,10 +433,6 @@ router.patch(
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.patch(
-  "/:id/reopen",
-  requireItPersonOrAbove,
-  TicketController.reopenTicket
-);
+router.patch("/:id/reopen", requireUser, TicketController.reopenTicket);
 
 export { router as ticketRoutes };

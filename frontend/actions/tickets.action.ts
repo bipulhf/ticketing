@@ -147,3 +147,20 @@ export const closeTicket = async (ticketId: string, notes: string) => {
   }
   return { error: response.error.message };
 };
+
+export const reopenTicket = async (ticketId: string) => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const response = await fetchJson(`tickets/${ticketId}/reopen`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.success) {
+    return response.data;
+  }
+  return { error: response.error.message };
+};

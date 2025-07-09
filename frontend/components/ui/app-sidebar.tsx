@@ -45,7 +45,6 @@ const generateMenuItems = (role: UserRole) => {
     ];
   } else if (role === "user") {
     return [
-      { title: "Home", url: "/dashboard", icon: Home },
       { title: "My Tickets", url: "/dashboard/tickets", icon: Ticket },
       { title: "Profile", url: "/dashboard/profile", icon: User },
     ];
@@ -65,7 +64,7 @@ export function AppSidebar({ role }: { role: UserRole }) {
       <SidebarHeader className="my-4">
         <Link
           href="/dashboard"
-          className="text-center flex items-center gap-2 justify-center"
+          className="text-center flex items-center gap-5 justify-center"
         >
           <div className="flex justify-center">
             <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-3 rounded-xl shadow-lg">

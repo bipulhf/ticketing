@@ -300,7 +300,7 @@ export class TicketService {
     newStatus?: TicketStatus
   ): boolean {
     if (userRole === "user") {
-      return ticket.createdById === userId && !newStatus;
+      return ticket.createdById === userId;
     }
     if (newStatus === TICKET_STATUSES.SOLVED) {
       return userRole === "it_person";

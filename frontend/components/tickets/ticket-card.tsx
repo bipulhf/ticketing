@@ -14,10 +14,16 @@ import {
   Mail,
   MessageSquare,
   Check,
+  Eye,
+  RotateCcw,
+  Loader2,
 } from "lucide-react";
 import { TicketStatusBadge } from "./ticket-status-badge";
 import { CloseTicketModal } from "./close-ticket-modal";
+import { reopenTicket } from "@/actions/tickets.action";
+import { toast } from "sonner";
 import type { Ticket, UserRole } from "@/types/types";
+import { useRouter } from "next/navigation";
 
 interface TicketCardProps {
   ticket: Ticket;
@@ -35,6 +41,8 @@ export function TicketCard({
   userType,
 }: TicketCardProps) {
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
+  const router = useRouter();
+  const [isReopening, setIsReopening] = useState(false);
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -68,6 +76,26 @@ export function TicketCard({
       .slice(0, 2);
   };
 
+  const handleReopenTicket = async () => {
+    setIsReopening(true);
+
+    try {
+      const result = await reopenTicket(ticket.id);
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Ticket reopened successfully");
+        onTicketUpdate?.();
+        router.refresh();
+      }
+    } catch (error) {
+      toast.error("Failed to reopen ticket");
+    } finally {
+      setIsReopening(false);
+    }
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow max-w-3xl">
       <CardHeader className="pb-3">
@@ -83,16 +111,31 @@ export function TicketCard({
               {ticket.description}
             </p>
           </div>
-          {userType === "it_person" && (
+          {userType === "user" && ticket.status === "solved" && (
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                disabled={ticket.status === "solved"}
+                onClick={handleReopenTicket}
+                disabled={isReopening}
+              >
+                {isReopening ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RotateCcw className="h-4 w-4" />
+                )}{" "}
+                Reopen
+              </Button>
+            </div>
+          )}
+          {userType === "it_person" && ticket.status === "pending" && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setIsCloseModalOpen(true)}
               >
-                <Check className="h-4 w-4" />{" "}
-                {ticket.status === "solved" ? "Solved" : "Solve"}
+                <Check className="h-4 w-4" /> Solve
               </Button>
             </div>
           )}
@@ -216,6 +259,7 @@ export function TicketCard({
         onClose={() => setIsCloseModalOpen(false)}
         onSuccess={() => {
           onTicketUpdate?.();
+          router.refresh();
         }}
       />
     </Card>

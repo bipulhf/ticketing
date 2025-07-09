@@ -3,6 +3,7 @@ import { ItPersonDashboard } from "@/components/it-person/it-person-dashboard";
 import { SuperAdminDashboard } from "@/components/super-admin/super-admin-dashboard";
 import { SystemOwnerDashboard } from "@/components/system-owner/system-owner-dashboard";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -17,6 +18,8 @@ export default async function DashboardPage() {
     return <AdminDashboard />;
   } else if (role === "it_person") {
     return <ItPersonDashboard />;
+  } else if (role === "user") {
+    redirect("/dashboard/tickets");
   }
 
   return <div>Dashboard</div>;
