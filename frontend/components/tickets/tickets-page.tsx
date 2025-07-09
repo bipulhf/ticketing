@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Plus, Ticket } from "lucide-react";
 import { TicketCard } from "./ticket-card";
 import { Pagination } from "./pagination";
+import { CreateTicketModal } from "./create-ticket-modal";
 import type {
   PaginationInfo,
   Ticket as TicketType,
@@ -39,6 +41,8 @@ export default function TicketPage({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const router = useRouter();
 
   const handleView = (ticket: TicketType) => {
     console.log("View ticket:", ticket);
@@ -53,6 +57,11 @@ export default function TicketPage({
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // In a real app, you'd fetch new data here
+  };
+
+  const handleTicketCreated = () => {
+    // Refresh the page to show the new ticket
+    router.refresh();
   };
 
   const filteredTickets = data.filter((ticket) => {
@@ -89,7 +98,7 @@ export default function TicketPage({
           </p>
         </div>
         {userType === "user" && (
-          <Button>
+          <Button onClick={() => setIsCreateModalOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             New Ticket
           </Button>
@@ -231,6 +240,12 @@ export default function TicketPage({
           />
         )}
       </div>
+
+      <CreateTicketModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleTicketCreated}
+      />
     </div>
   );
 }

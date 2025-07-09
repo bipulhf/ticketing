@@ -41,6 +41,9 @@ export interface Ticket {
   description: string;
   status: TicketStatus;
   notes?: string;
+  ip_address?: string;
+  device_name?: string;
+  ip_number?: string;
   createdById: string;
   createdBy: User;
   attachments: Attachment[];
@@ -73,13 +76,19 @@ export interface TicketAttachmentInput {
 
 export interface CreateTicketRequest {
   description: string;
-  attachments?: TicketAttachmentInput[];
+  ip_address?: string;
+  device_name?: string;
+  ip_number?: string;
+  attachments?: File[];
 }
 
 export interface UpdateTicketRequest {
   description?: string;
   status?: TicketStatus;
   notes?: string;
+  ip_address?: string;
+  device_name?: string;
+  ip_number?: string;
   attachments?: TicketAttachmentInput[];
 }
 

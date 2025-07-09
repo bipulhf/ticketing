@@ -14,6 +14,9 @@ import {
 export interface CreateTicketRequest {
   description: string;
   attachments?: AttachmentData[];
+  ip_address?: string;
+  device_name?: string;
+  ip_number?: string;
 }
 
 export interface UpdateTicketRequest {
@@ -21,6 +24,9 @@ export interface UpdateTicketRequest {
   status?: TicketStatus;
   notes?: string;
   attachments?: AttachmentData[];
+  ip_address?: string;
+  device_name?: string;
+  ip_number?: string;
 }
 
 export class TicketService {
@@ -28,7 +34,13 @@ export class TicketService {
     ticketData: CreateTicketRequest,
     createdById: string
   ) {
-    const { description, attachments = [] } = ticketData;
+    const {
+      description,
+      attachments = [],
+      ip_address,
+      device_name,
+      ip_number,
+    } = ticketData;
 
     // Validate that the user exists and can create tickets
     const user = await clonedPrisma().user.findUnique({
@@ -65,6 +77,9 @@ export class TicketService {
           description,
           createdById,
           status: TICKET_STATUSES.PENDING,
+          ip_address: ip_address || null,
+          device_name: device_name || null,
+          ip_number: ip_number || null,
         },
         include: {
           createdBy: {
@@ -159,7 +174,15 @@ export class TicketService {
     updateData: UpdateTicketRequest,
     updaterId: string
   ) {
-    const { description, status, notes, attachments } = updateData;
+    const {
+      description,
+      status,
+      notes,
+      attachments,
+      ip_address,
+      device_name,
+      ip_number,
+    } = updateData;
 
     const user = await clonedPrisma().user.findUnique({
       where: { id: updaterId },
@@ -204,6 +227,9 @@ export class TicketService {
         ...(description && { description }),
         ...(status && { status }),
         ...(notes && { notes }),
+        ...(ip_address !== undefined && { ip_address: ip_address || null }),
+        ...(device_name !== undefined && { device_name: device_name || null }),
+        ...(ip_number !== undefined && { ip_number: ip_number || null }),
       },
       include: {
         createdBy: {

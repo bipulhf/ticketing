@@ -133,6 +133,21 @@ const swaggerDefinition: SwaggerDefinition = {
             example:
               "Reset password and updated security settings. User can now access email.",
           },
+          ip_address: {
+            type: "string",
+            description: "IP address of the user's device",
+            example: "192.168.1.100",
+          },
+          device_name: {
+            type: "string",
+            description: "Name of the user's device",
+            example: "LAPTOP-ABC123",
+          },
+          ip_number: {
+            type: "string",
+            description: "Alternative IP number field",
+            example: "10.0.0.15",
+          },
           createdById: {
             type: "string",
             description: "ID of user who created the ticket",
@@ -280,6 +295,21 @@ const swaggerDefinition: SwaggerDefinition = {
             example:
               "Unable to access company email. Getting authentication error when trying to log in.",
           },
+          ip_address: {
+            type: "string",
+            description: "IP address of the user's device (optional)",
+            example: "192.168.1.100",
+          },
+          device_name: {
+            type: "string",
+            description: "Name of the user's device (optional)",
+            example: "LAPTOP-ABC123",
+          },
+          ip_number: {
+            type: "string",
+            description: "Alternative IP number field (optional)",
+            example: "10.0.0.15",
+          },
           attachments: {
             type: "array",
             items: {
@@ -326,6 +356,21 @@ const swaggerDefinition: SwaggerDefinition = {
             type: "string",
             description: "Additional notes (required when closing ticket)",
             example: "Password reset completed. User can now access email.",
+          },
+          ip_address: {
+            type: "string",
+            description: "Updated IP address of the user's device (optional)",
+            example: "192.168.1.101",
+          },
+          device_name: {
+            type: "string",
+            description: "Updated name of the user's device (optional)",
+            example: "LAPTOP-DEF456",
+          },
+          ip_number: {
+            type: "string",
+            description: "Updated alternative IP number field (optional)",
+            example: "10.0.0.16",
           },
           attachments: {
             type: "array",
