@@ -3,6 +3,7 @@ import {
   TicketService,
   CreateTicketRequest,
   UpdateTicketRequest,
+  GetTicketsFilters,
 } from "../services/ticketService";
 import { asyncHandler } from "../middlewares/errorMiddleware";
 import { HTTP_STATUS } from "../utils/constants";
@@ -91,10 +92,16 @@ export class TicketController {
         });
       }
 
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const filters: GetTicketsFilters = {
+        page: parseInt(req.query.page as string) || 1,
+        limit: parseInt(req.query.limit as string) || 10,
+        status: req.query.status as string,
+        fromDate: req.query.fromDate as string,
+        toDate: req.query.toDate as string,
+        search: req.query.search as string,
+      };
 
-      const result = await TicketService.getTickets(userId!, page, limit);
+      const result = await TicketService.getTickets(userId!, filters);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,

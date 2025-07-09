@@ -29,6 +29,15 @@ export interface UpdateTicketRequest {
   ip_number?: string;
 }
 
+export interface GetTicketsFilters {
+  page?: number;
+  limit?: number;
+  status?: string;
+  fromDate?: string;
+  toDate?: string;
+  search?: string;
+}
+
 export class TicketService {
   static async createTicket(
     ticketData: CreateTicketRequest,
@@ -247,11 +256,9 @@ export class TicketService {
     return updatedTicket;
   }
 
-  static async getTickets(
-    userId: string,
-    page: number = 1,
-    limit: number = 10
-  ) {
+  static async getTickets(userId: string, filters: GetTicketsFilters = {}) {
+    const { page = 1, limit = 10, status, fromDate, toDate, search } = filters;
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { role: true },
@@ -264,23 +271,59 @@ export class TicketService {
     const skip = (page - 1) * limit;
 
     // Build access filter based on user role and hierarchy
-    let where = {};
+    let where: any = {};
     if (user.role === "user") {
       // Users see only their own tickets
-      where = { createdById: userId };
+      where.createdById = userId;
     } else {
       // IT persons and above see tickets from users in their hierarchy
-      where = {
-        createdBy: {
-          OR: [
-            { systemOwnerId: userId },
-            { superAdminId: userId },
-            { adminId: userId },
-            { itPersonId: userId },
-            { id: userId }, // Include their own tickets if they created any
-          ],
-        },
+      where.createdBy = {
+        OR: [
+          { systemOwnerId: userId },
+          { superAdminId: userId },
+          { adminId: userId },
+          { itPersonId: userId },
+          { id: userId }, // Include their own tickets if they created any
+        ],
       };
+    }
+
+    // Add status filter
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    // Add date range filter
+    if (fromDate || toDate) {
+      where.createdAt = {};
+      if (fromDate) {
+        where.createdAt.gte = new Date(fromDate);
+      }
+      if (toDate) {
+        // Add 1 day and subtract 1ms to include the entire toDate day
+        const endDate = new Date(toDate);
+        endDate.setDate(endDate.getDate() + 1);
+        endDate.setMilliseconds(endDate.getMilliseconds() - 1);
+        where.createdAt.lte = endDate;
+      }
+    }
+
+    // Add search filter
+    if (search) {
+      where.OR = [
+        { description: { contains: search, mode: "insensitive" } },
+        { id: { contains: search, mode: "insensitive" } },
+        {
+          createdBy: {
+            username: { contains: search, mode: "insensitive" },
+          },
+        },
+        {
+          createdBy: {
+            email: { contains: search, mode: "insensitive" },
+          },
+        },
+      ];
     }
 
     const [tickets, total] = await Promise.all([

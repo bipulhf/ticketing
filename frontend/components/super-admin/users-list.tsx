@@ -426,8 +426,6 @@ export function SuperAdminUsersList() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="system_owner">System Owner</SelectItem>
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="it_person">IT Person</SelectItem>
                   <SelectItem value="user">User</SelectItem>

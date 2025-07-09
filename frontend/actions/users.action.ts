@@ -10,7 +10,11 @@ export const getUsersForSystemOwner = async ({
 }) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
-  const response = await fetchJson(`users/my-users?${params}`, {
+  const paramsString = Array.from(params || [])
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
+
+  const response = await fetchJson(`users/my-users?${paramsString}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,

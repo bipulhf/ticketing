@@ -89,7 +89,7 @@ export function ItPersonUsersList() {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     search: "",
-    role: "all",
+    role: "user",
     isActive: "all",
     page: 1,
     limit: 10,
@@ -425,11 +425,6 @@ export function ItPersonUsersList() {
                   <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="system_owner">System Owner</SelectItem>
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="it_person">IT Person</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                 </SelectContent>
               </Select>

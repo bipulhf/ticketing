@@ -9,12 +9,14 @@ export const getTickets = async ({
   status,
   fromDate,
   toDate,
+  search,
 }: {
   page?: number;
   limit?: number;
   status?: string;
   fromDate?: string;
   toDate?: string;
+  search?: string;
 } = {}) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -32,6 +34,9 @@ export const getTickets = async ({
   }
   if (toDate) {
     params.append("toDate", toDate);
+  }
+  if (search) {
+    params.append("search", search);
   }
 
   const response = await fetchJson(`tickets?${params}`, {
