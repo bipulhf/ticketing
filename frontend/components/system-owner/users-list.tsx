@@ -59,11 +59,20 @@ import {
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 import { cn } from "@/lib/utils";
-import { BusinessType, UserRole, UsersResponse } from "@/types/types";
+import { BusinessType, User, UserRole, UsersResponse } from "@/types/types";
 import {
   getUsersForSystemOwner,
   getAllUsersByType,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
 } from "@/actions/users.action";
+import {
+  UserInfoModal,
+  UserFormModal,
+  UserFormValues,
+} from "@/components/users/user-modal";
 
 interface Filters {
   search: string;
@@ -95,6 +104,12 @@ export function SystemOwnerUsersList() {
     page: 1,
     limit: 10,
   });
+
+  // Modal state management
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const fetchMyUsers = useCallback(async () => {
     setLoading(true);
@@ -172,6 +187,85 @@ export function SystemOwnerUsersList() {
 
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
+  };
+
+  // Form submission handlers
+  const handleCreateUser = async (formData: UserFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const userData = {
+        ...formData,
+        password: "defaultPassword123!", // You might want to generate a random password or ask for it
+      };
+
+      const result = await createUser(userData);
+
+      if (result.error) {
+        setError(result.error);
+      } else {
+        // Refresh the user list
+        fetchUsers();
+        setError(null);
+      }
+    } catch (err) {
+      setError("Failed to create user");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateUser = async (formData: UserFormValues) => {
+    if (!selectedUser) return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await updateUser(selectedUser.id, formData);
+
+      if (result.error) {
+        setError(result.error);
+      } else {
+        // Refresh the user list
+        fetchUsers();
+        setSelectedUser(null);
+        setShowEditModal(false);
+        setError(null);
+      }
+    } catch (err) {
+      setError("Failed to update user");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Are you sure you want to delete this user?")) return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await deleteUser(userId);
+
+      if (result.error) {
+        setError(result.error);
+      } else {
+        // Refresh the user list
+        fetchUsers();
+        setError(null);
+      }
+    } catch (err) {
+      setError("Failed to delete user");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleViewUser = async (user: User) => {
+    setSelectedUser(user);
+    setShowViewModal(true);
+  };
+
+  const handleEditUser = async (user: User) => {
+    setSelectedUser(user);
+    setShowEditModal(true);
   };
 
   const getRoleBadgeVariant = (role: UserRole) => {
@@ -370,10 +464,17 @@ export function SystemOwnerUsersList() {
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
-              <Button size="sm">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add User
-              </Button>
+
+              {/* Add User Modal */}
+              <UserFormModal
+                trigger={
+                  <Button size="sm" disabled={isSubmitting}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add User
+                  </Button>
+                }
+                onSubmit={handleCreateUser}
+              />
             </div>
           </div>
         </div>
@@ -408,52 +509,46 @@ export function SystemOwnerUsersList() {
           <CardContent>
             {/* Filters - Only show search and pagination for all users view */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              {viewMode === "my-users" && (
-                <>
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Search users by name, email, or location..."
-                      value={filters.search}
-                      onChange={(e) => handleSearch(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search users by name, email, or location..."
+                  value={filters.search}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
 
-                  <Select
-                    value={filters.role}
-                    onValueChange={(value) => handleFilterChange("role", value)}
-                  >
-                    <SelectTrigger className="w-full sm:w-48">
-                      <SelectValue placeholder="Filter by role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
-                      <SelectItem value="system_owner">System Owner</SelectItem>
-                      <SelectItem value="super_admin">Super Admin</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="it_person">IT Person</SelectItem>
-                      <SelectItem value="user">User</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <Select
+                value={filters.role}
+                onValueChange={(value) => handleFilterChange("role", value)}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="system_owner">System Owner</SelectItem>
+                  <SelectItem value="super_admin">Super Admin</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="it_person">IT Person</SelectItem>
+                  <SelectItem value="user">User</SelectItem>
+                </SelectContent>
+              </Select>
 
-                  <Select
-                    value={filters.isActive}
-                    onValueChange={(value) =>
-                      handleFilterChange("isActive", value)
-                    }
-                  >
-                    <SelectTrigger className="w-full sm:w-48">
-                      <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="true">Active</SelectItem>
-                      <SelectItem value="false">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </>
-              )}
+              <Select
+                value={filters.isActive}
+                onValueChange={(value) => handleFilterChange("isActive", value)}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="true">Active</SelectItem>
+                  <SelectItem value="false">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
 
               <Select
                 value={filters.limit.toString()}
@@ -693,22 +788,33 @@ export function SystemOwnerUsersList() {
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                  disabled={isSubmitting}
+                                >
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleViewUser(user)}
+                                >
                                   <Eye className="mr-2 h-4 w-4" />
                                   View Details
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleEditUser(user)}
+                                >
                                   <Edit className="mr-2 h-4 w-4" />
                                   Edit User
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600">
+                                <DropdownMenuItem
+                                  className="text-red-600"
+                                  onClick={() => handleDeleteUser(user.id)}
+                                >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Delete User
                                 </DropdownMenuItem>
@@ -802,15 +908,49 @@ export function SystemOwnerUsersList() {
                     ? "Get started by adding your first user."
                     : "No users found in the system."}
                 </p>
-                <Button>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Add User
-                </Button>
+                <UserFormModal
+                  trigger={
+                    <Button disabled={isSubmitting}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add User
+                    </Button>
+                  }
+                  onSubmit={handleCreateUser}
+                />
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* View User Modal */}
+      {selectedUser && (
+        <UserInfoModal
+          user={selectedUser}
+          open={showViewModal}
+          onOpenChange={(open) => {
+            setShowViewModal(open);
+            if (!open) {
+              setSelectedUser(null);
+            }
+          }}
+        />
+      )}
+
+      {/* Edit User Modal */}
+      {selectedUser && (
+        <UserFormModal
+          user={selectedUser}
+          open={showEditModal}
+          onOpenChange={(open) => {
+            setShowEditModal(open);
+            if (!open) {
+              setSelectedUser(null);
+            }
+          }}
+          onSubmit={handleUpdateUser}
+        />
+      )}
     </div>
   );
 }

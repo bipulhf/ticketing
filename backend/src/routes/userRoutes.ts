@@ -752,4 +752,149 @@ router.get(
  */
 router.get("/:id", UserController.getUser);
 
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   put:
+ *     summary: Update user by ID
+ *     description: Update a specific user by their ID. Users can only update profiles they have permission to manage based on role hierarchy.
+ *     tags: [User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *         example: "clp123abc456def789"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: Updated username
+ *                 example: "updated_username"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Updated email address
+ *                 example: "updated@email.com"
+ *               businessType:
+ *                 type: string
+ *                 enum: [small_business, medium_business, large_business]
+ *                 description: Business type (for super_admin role)
+ *                 example: "medium_business"
+ *               accountLimit:
+ *                 type: integer
+ *                 description: Account limit (auto-calculated for super_admin based on business type)
+ *                 example: 700
+ *               expiryDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Account expiry date
+ *                 example: "2025-12-31T23:59:59Z"
+ *               location:
+ *                 type: string
+ *                 description: User location
+ *                 example: "Updated Location"
+ *               isActive:
+ *                 type: boolean
+ *                 description: Account active status
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid request data or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - Cannot update this user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.put("/:id", UserController.updateUser);
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Delete user by ID
+ *     description: Delete (soft delete) a specific user by their ID. Users can only delete users they have permission to manage based on role hierarchy.
+ *     tags: [User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *         example: "clp123abc456def789"
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: "User deleted successfully"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - Cannot delete this user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.delete("/:id", UserController.deleteUser);
+
 export { router as userRoutes };

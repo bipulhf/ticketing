@@ -294,4 +294,49 @@ export class UserController {
       return;
     }
   );
+
+  static updateUser = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const { id } = req.params;
+      const updaterId = req.user?.id;
+
+      if (!updaterId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not authenticated" },
+        });
+      }
+
+      const user = await UserService.updateUser(id!, req.body, updaterId);
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        user,
+        message: "User updated successfully",
+      });
+      return;
+    }
+  );
+
+  static deleteUser = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const { id } = req.params;
+      const deleterId = req.user?.id;
+
+      if (!deleterId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not authenticated" },
+        });
+      }
+
+      await UserService.deleteUser(id!, deleterId);
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        message: "User deleted successfully",
+      });
+      return;
+    }
+  );
 }
