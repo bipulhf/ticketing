@@ -158,7 +158,7 @@ export class TicketService {
     }
 
     // Check if user can view this ticket
-    const canView = this.canUserAccessTicket(user.role, userId, ticket);
+    const canView = await this.canUserAccessTicket(user.role, userId, ticket);
     if (!canView) {
       throw createError(
         ERROR_MESSAGES.UNAUTHORIZED_ACTION,
@@ -202,7 +202,7 @@ export class TicketService {
     }
 
     // Check permissions
-    const canUpdate = this.canUserModifyTicket(
+    const canUpdate = await this.canUserModifyTicket(
       user.role,
       updaterId,
       ticket,
@@ -263,12 +263,25 @@ export class TicketService {
 
     const skip = (page - 1) * limit;
 
-    // Build access filter based on user role
+    // Build access filter based on user role and hierarchy
     let where = {};
     if (user.role === "user") {
+      // Users see only their own tickets
       where = { createdById: userId };
+    } else {
+      // IT persons and above see tickets from users in their hierarchy
+      where = {
+        createdBy: {
+          OR: [
+            { systemOwnerId: userId },
+            { superAdminId: userId },
+            { adminId: userId },
+            { itPersonId: userId },
+            { id: userId }, // Include their own tickets if they created any
+          ],
+        },
+      };
     }
-    // IT persons and above can see all tickets
 
     const [tickets, total] = await Promise.all([
       clonedPrisma().ticket.findMany({
@@ -306,33 +319,58 @@ export class TicketService {
     };
   }
 
-  private static canUserAccessTicket(
+  private static async canUserAccessTicket(
     userRole: string,
     userId: string,
     ticket: any
-  ): boolean {
+  ): Promise<boolean> {
     if (userRole === "user") {
       return ticket.createdById === userId;
     }
-    return ["it_person", "admin", "super_admin", "system_owner"].includes(
-      userRole
+
+    // For IT persons and above, check if the ticket creator is in their hierarchy
+    const ticketCreator = await clonedPrisma().user.findUnique({
+      where: { id: ticket.createdById },
+      select: {
+        systemOwnerId: true,
+        superAdminId: true,
+        adminId: true,
+        itPersonId: true,
+      },
+    });
+
+    if (!ticketCreator) {
+      return false;
+    }
+
+    // Check if current user is in the ticket creator's hierarchy
+    return (
+      ticketCreator.systemOwnerId === userId ||
+      ticketCreator.superAdminId === userId ||
+      ticketCreator.adminId === userId ||
+      ticketCreator.itPersonId === userId ||
+      ticket.createdById === userId // They created the ticket themselves
     );
   }
 
-  private static canUserModifyTicket(
+  private static async canUserModifyTicket(
     userRole: string,
     userId: string,
     ticket: any,
     newStatus?: TicketStatus
-  ): boolean {
+  ): Promise<boolean> {
     if (userRole === "user") {
       return ticket.createdById === userId;
     }
+
+    // For ticket closure, only IT persons can close tickets (but need hierarchy check)
     if (newStatus === TICKET_STATUSES.SOLVED) {
-      return userRole === "it_person";
+      if (userRole !== "it_person") {
+        return false;
+      }
     }
-    return ["it_person", "admin", "super_admin", "system_owner"].includes(
-      userRole
-    );
+
+    // Check if user has access to this ticket through hierarchy
+    return await this.canUserAccessTicket(userRole, userId, ticket);
   }
 }

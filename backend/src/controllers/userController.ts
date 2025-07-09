@@ -192,9 +192,14 @@ export class UserController {
       const limitNum = parseInt(limit);
       const offset = (pageNum - 1) * limitNum;
 
-      // Build filter conditions
+      // Build filter conditions to include all users in the hierarchy
       const filters: any = {
-        createdById: creatorId,
+        OR: [
+          { systemOwnerId: creatorId },
+          { superAdminId: creatorId },
+          { adminId: creatorId },
+          { itPersonId: creatorId },
+        ],
       };
 
       if (role) {
@@ -206,10 +211,15 @@ export class UserController {
       }
 
       if (search) {
-        filters.OR = [
-          { username: { contains: search, mode: "insensitive" } },
-          { email: { contains: search, mode: "insensitive" } },
-        ];
+        // Combine search with the hierarchy filter
+        const searchFilter = {
+          OR: [
+            { username: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+          ],
+        };
+        filters.AND = [{ OR: filters.OR }, searchFilter];
+        delete filters.OR;
       }
 
       const [users, totalCount] = await Promise.all([

@@ -151,6 +151,23 @@ export class UserService {
       );
     }
 
+    // Get creator information to determine hierarchy relationships
+    const creator = await clonedPrisma().user.findUnique({
+      where: { id: creatorId },
+      select: {
+        id: true,
+        role: true,
+        systemOwnerId: true,
+        superAdminId: true,
+        adminId: true,
+        itPersonId: true,
+      },
+    });
+
+    if (!creator) {
+      throw createError("Creator not found", HTTP_STATUS.NOT_FOUND);
+    }
+
     // Hash password
     const hashedPassword = await hashPassword(userData.password);
 
@@ -158,6 +175,51 @@ export class UserService {
     let accountLimit = userData.accountLimit;
     if (userData.role === "super_admin" && userData.businessType) {
       accountLimit = ACCOUNT_LIMITS[userData.businessType];
+    }
+
+    // Determine hierarchy field values based on creator's role
+    let hierarchyFields: {
+      systemOwnerId?: string;
+      superAdminId?: string;
+      adminId?: string;
+      itPersonId?: string;
+    } = {};
+
+    // Set hierarchy based on who is creating the user
+    switch (creator.role) {
+      case "system_owner":
+        hierarchyFields.systemOwnerId = creator.id;
+        break;
+      case "super_admin":
+        hierarchyFields.superAdminId = creator.id;
+        // Inherit system owner from creator if they have one
+        if (creator.systemOwnerId) {
+          hierarchyFields.systemOwnerId = creator.systemOwnerId;
+        }
+        break;
+      case "admin":
+        hierarchyFields.adminId = creator.id;
+        // Inherit higher hierarchy from creator
+        if (creator.superAdminId) {
+          hierarchyFields.superAdminId = creator.superAdminId;
+        }
+        if (creator.systemOwnerId) {
+          hierarchyFields.systemOwnerId = creator.systemOwnerId;
+        }
+        break;
+      case "it_person":
+        hierarchyFields.itPersonId = creator.id;
+        // Inherit higher hierarchy from creator
+        if (creator.adminId) {
+          hierarchyFields.adminId = creator.adminId;
+        }
+        if (creator.superAdminId) {
+          hierarchyFields.superAdminId = creator.superAdminId;
+        }
+        if (creator.systemOwnerId) {
+          hierarchyFields.systemOwnerId = creator.systemOwnerId;
+        }
+        break;
     }
 
     // Create user
@@ -173,6 +235,7 @@ export class UserService {
         location: userData.location || null,
         createdById: creatorId || null,
         isActive: true,
+        ...hierarchyFields,
       },
     });
 
@@ -319,41 +382,15 @@ export class UserService {
     const dateFilter = buildDateFilter(startDate, endDate);
     const dateFilterCondition = buildPrismaDateFilter(dateFilter);
 
-    let userFilter = {};
-
-    // Build user filter based on role hierarchy
-    if (user.role === "super_admin") {
-      userFilter = { createdById: userId };
-    } else if (user.role === "admin") {
-      userFilter = {
-        OR: [
-          { createdById: userId },
-          {
-            createdBy: {
-              createdById: userId,
-            },
-          },
-        ],
-      };
-    } else if (user.role === "it_person") {
-      userFilter = {
-        OR: [
-          { createdById: userId },
-          {
-            createdBy: {
-              OR: [
-                { createdById: userId },
-                {
-                  createdBy: {
-                    createdById: userId,
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      };
-    }
+    // Build user filter based on hierarchy fields
+    const userFilter = {
+      OR: [
+        { systemOwnerId: userId },
+        { superAdminId: userId },
+        { adminId: userId },
+        { itPersonId: userId },
+      ],
+    };
 
     // Get user counts
     const [adminCount, itPersonCount, userCount, superAdminCount] =
@@ -384,12 +421,13 @@ export class UserService {
               where: {
                 role: "super_admin",
                 isActive: true,
+                systemOwnerId: userId,
               },
             })
           : 0,
       ]);
 
-    // Get ticket stats
+    // Get ticket stats - tickets from users in the hierarchy
     const [totalTickets, pendingTickets, solvedTickets] = await Promise.all([
       clonedPrisma().ticket.count({
         where: {

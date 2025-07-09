@@ -233,63 +233,6 @@ export function SystemOwnerDashboard() {
           </CardContent>
         </Card>
 
-        {/* System Owner Section */}
-        {systemOwnerData && (
-          <Card className="border-blue-200 bg-blue-50/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-900">
-                <Shield className="h-5 w-5" />
-                System Owner Overview
-              </CardTitle>
-              <CardDescription className="text-blue-700">
-                Comprehensive system management and oversight
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white rounded-lg p-4 border">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Super Admins</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {systemOwnerData.superAdminCount || 0}
-                      </p>
-                    </div>
-                    <Settings className="h-8 w-8 text-blue-600" />
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg p-4 border">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Expiring Tickets</p>
-                      <p className="text-2xl font-bold text-orange-600">
-                        {systemOwnerData.expiringTickets || 0}
-                      </p>
-                    </div>
-                    <AlertTriangle className="h-8 w-8 text-orange-600" />
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg p-4 border">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">System Health</p>
-                      <Badge
-                        variant="secondary"
-                        className="bg-green-100 text-green-800"
-                      >
-                        {systemOwnerData.systemHealth || "Healthy"}
-                      </Badge>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-green-600" />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* User Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>

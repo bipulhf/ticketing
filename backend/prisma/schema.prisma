@@ -41,6 +41,23 @@ model User {
   createdBy     User?       @relation("UserCreatedBy", fields: [createdById], references: [id])
   createdUsers  User[]      @relation("UserCreatedBy")
   
+  // Hierarchy tracking fields - to track who created whom in the role hierarchy
+  systemOwnerId    String?
+  systemOwner      User?     @relation("SystemOwnerHierarchy", fields: [systemOwnerId], references: [id])
+  systemOwnerUsers User[]    @relation("SystemOwnerHierarchy")
+  
+  superAdminId     String?
+  superAdmin       User?     @relation("SuperAdminHierarchy", fields: [superAdminId], references: [id])
+  superAdminUsers  User[]    @relation("SuperAdminHierarchy")
+  
+  adminId          String?
+  admin            User?     @relation("AdminHierarchy", fields: [adminId], references: [id])
+  adminUsers       User[]    @relation("AdminHierarchy")
+  
+  itPersonId       String?
+  itPerson         User?     @relation("ItPersonHierarchy", fields: [itPersonId], references: [id])
+  itPersonUsers    User[]    @relation("ItPersonHierarchy")
+  
   // Super Admin specific fields
   businessType  BusinessType?
   accountLimit  Int?
