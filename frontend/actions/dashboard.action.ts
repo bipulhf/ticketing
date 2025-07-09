@@ -1,12 +1,15 @@
 "use server";
 
+import { UserRole } from "@/types/types";
 import { fetchJson } from "@/utils/custom-fetch";
 import { cookies } from "next/headers";
 
-export const getSystemOwnerDashboardData = async ({
+export const getDashboardData = async ({
   params,
+  userType = "system_owner",
 }: {
   params?: URLSearchParams;
+  userType?: UserRole;
 }) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -16,12 +19,15 @@ export const getSystemOwnerDashboardData = async ({
       Authorization: `Bearer ${token}`,
     },
   });
-  const response1Promise = fetchJson(`dashboard/system-owner?${params}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response1Promise = fetchJson(
+    `dashboard/${userType.replace("_", "-")}?${params}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
   const [response, response1] = await Promise.all([
     responsePromise,
     response1Promise,

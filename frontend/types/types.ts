@@ -24,6 +24,7 @@ export interface User {
   location?: string;
   createdAt: string;
   updatedAt: string;
+  createdBy?: User;
 }
 
 export interface Attachment {
@@ -112,6 +113,35 @@ export interface DashboardMetrics {
     pendingTickets: number;
     solvedTickets: number;
   };
+}
+
+export interface AccountInfo {
+  businessType: BusinessType;
+  accountLimit: number;
+  accountUtilization: number;
+  remainingSlots: number;
+}
+
+export interface ExpiryInfo {
+  expiryDate: string;
+  daysToExpiry: number;
+  isExpired: boolean;
+}
+
+export interface ComprehensiveDashboardData {
+  userCounts: {
+    totalUsers: number;
+    adminCount: number;
+    itPersonCount: number;
+    userCount: number;
+  };
+  ticketStats: {
+    totalTickets: number;
+    pendingTickets: number;
+    solvedTickets: number;
+  };
+  accountInfo: AccountInfo;
+  expiryInfo: ExpiryInfo;
 }
 
 export interface SystemOwnerData {

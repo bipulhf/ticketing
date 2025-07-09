@@ -1,6 +1,7 @@
 import { getTickets } from "@/actions/tickets.action";
 import TicketsPage from "@/components/tickets/tickets-page";
 import { TicketsListResponse } from "@/types/types";
+import { cookies } from "next/headers";
 
 interface TicketsPageProps {
   searchParams: Promise<{
@@ -14,7 +15,9 @@ interface TicketsPageProps {
 
 export default async function Page({ searchParams }: TicketsPageProps) {
   const { page, limit, status, fromDate, toDate } = await searchParams;
-
+  const cookieStore = await cookies();
+  const user = cookieStore.get("user")?.value;
+  const role = JSON.parse(user!).role;
   try {
     const response = await getTickets({
       page: page ? parseInt(page, 10) : 1,
@@ -45,7 +48,7 @@ export default async function Page({ searchParams }: TicketsPageProps) {
       <TicketsPage
         data={ticketsData.tickets}
         pagination={ticketsData.pagination}
-        userType="system_owner"
+        userType={role}
       />
     );
   } catch (error) {
