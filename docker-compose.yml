@@ -48,7 +48,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      API_URL: "http://backend:5000"
+      API_URL: http://backend:5000
+      UPLOADTHING_CALLBACK_URL: http://localhost:80
       UPLOADTHING_TOKEN: "eyJhcGlLZXkiOiJza19saXZlX2NiMWU5N2ViOWMzNGI4MGNjOTA5MGQxNzUwZGYzYzlhZjQxMjM1Y2E3ODQzY2RjMGM4ZGI5Y2VkMGViOGYzNTciLCJhcHBJZCI6ImtrMDYwdnZyaWIiLCJyZWdpb25zIjpbInNlYTEiXX0="
     # Remove external port exposure - nginx will handle this
     expose:
