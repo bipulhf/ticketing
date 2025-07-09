@@ -17,8 +17,8 @@ const generateMenuItems = (role: UserRole) => {
   if (role === "system_owner") {
     return [
       { title: "Home", url: "/dashboard", icon: Home },
-      { title: "Super Admins", url: "/dashboard/users", icon: Users },
-      { title: "Reports", url: "/dashboard/reports", icon: Archive },
+      { title: "Users", url: "/dashboard/users", icon: Users },
+      { title: "Tickets", url: "/dashboard/tickets", icon: Ticket },
     ];
   } else if (role === "super_admin") {
     return [

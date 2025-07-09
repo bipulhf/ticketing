@@ -374,34 +374,6 @@ export function SystemOwnerUsersList() {
     return [];
   };
 
-  if (loading && !data && !allUsersData) {
-    return (
-      <div className="min-h-screen p-6">
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-48" />
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-4 w-64" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-4">
-                <Skeleton className="h-10 w-64" />
-                <Skeleton className="h-10 w-32" />
-                <Skeleton className="h-10 w-32" />
-              </div>
-              <div className="space-y-2">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
@@ -611,233 +583,243 @@ export function SystemOwnerUsersList() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loadingAllUsers || loading
-                    ? // Show skeleton rows while loading
-                      Array.from({ length: filters.limit }, (_, i) => (
-                        <TableRow key={i}>
-                          <TableCell>
-                            <div className="space-y-2">
-                              <Skeleton className="h-4 w-32" />
-                              <Skeleton className="h-3 w-48" />
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-6 w-20" />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Skeleton className="h-4 w-4 rounded-full" />
-                              <Skeleton className="h-4 w-16" />
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-6 w-16" />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Skeleton className="h-4 w-4" />
-                              <Skeleton className="h-4 w-12" />
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <Skeleton className="h-4 w-4" />
-                                <Skeleton className="h-4 w-20" />
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
+                  {loadingAllUsers || loading || !currentPagination ? (
+                    // Show skeleton rows while loading
+                    Array.from({ length: filters.limit }, (_, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-48" />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-6 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-4 rounded-full" />
+                            <Skeleton className="h-4 w-16" />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-6 w-16" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-4" />
+                            <Skeleton className="h-4 w-12" />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <Skeleton className="h-4 w-4" />
-                              <Skeleton className="h-4 w-24" />
+                              <Skeleton className="h-4 w-20" />
                             </div>
-                          </TableCell>
-                          {viewMode === "all-users-by-type" && (
-                            <TableCell>
-                              <div className="space-y-1">
-                                <Skeleton className="h-4 w-20" />
-                                <Skeleton className="h-3 w-32" />
-                              </div>
-                            </TableCell>
-                          )}
-                          <TableCell>
-                            <Skeleton className="h-4 w-20" />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Skeleton className="h-8 w-8" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    : // Show actual user data
-                      currentUsers.map((user) => (
-                        <TableRow key={user.id} className="hover:bg-gray-50">
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-4" />
+                            <Skeleton className="h-4 w-24" />
+                          </div>
+                        </TableCell>
+                        {viewMode === "all-users-by-type" && (
                           <TableCell>
                             <div className="space-y-1">
-                              <div className="font-medium text-gray-900">
-                                {user.username}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {user.email}
-                              </div>
+                              <Skeleton className="h-4 w-20" />
+                              <Skeleton className="h-3 w-32" />
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant={getRoleBadgeVariant(user.role)}>
-                              {getRoleDisplayName(user.role)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {/* For all users view, we might not have isActive, so assume active if not provided */}
-                              {user.isActive !== false ? (
-                                <>
-                                  <CheckCircle className="h-4 w-4 text-green-600" />
-                                  <span className="text-green-600 font-medium">
-                                    Active
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <XCircle className="h-4 w-4 text-red-600" />
-                                  <span className="text-red-600 font-medium">
-                                    Inactive
-                                  </span>
-                                </>
-                              )}
+                        )}
+                        <TableCell>
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Skeleton className="h-8 w-8" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : currentUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={10} className="text-center">
+                        <p className="text-gray-500 text-md my-5">
+                          No users found
+                        </p>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    // Show actual user data
+                    currentUsers.map((user) => (
+                      <TableRow key={user.id} className="hover:bg-gray-50">
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="font-medium text-gray-900">
+                              {user.username}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                getBusinessTypeBadge(user.businessType).variant
-                              }
-                            >
-                              {getBusinessTypeBadge(user.businessType).label}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {user.accountLimit ? (
-                                <>
-                                  <CreditCard className="h-4 w-4 text-gray-400" />
-                                  <span className="font-mono text-sm">
-                                    {formatAccountLimit(user.accountLimit)}
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-gray-400 text-sm">
-                                  Not Set
+                            <div className="text-sm text-gray-500">
+                              {user.email}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getRoleBadgeVariant(user.role)}>
+                            {getRoleDisplayName(user.role)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {/* For all users view, we might not have isActive, so assume active if not provided */}
+                            {user.isActive !== false ? (
+                              <>
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <span className="text-green-600 font-medium">
+                                  Active
                                 </span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {user.expiryDate ? (
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="h-4 w-4 text-gray-400" />
-                                  <span className="text-sm">
-                                    {formatDate(user.expiryDate)}
-                                  </span>
-                                </div>
-                                {isExpired(user.expiryDate) && (
-                                  <Badge
-                                    variant="destructive"
-                                    className="text-xs"
-                                  >
-                                    Expired
-                                  </Badge>
-                                )}
-                                {isExpiringSoon(user.expiryDate) &&
-                                  !isExpired(user.expiryDate) && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs text-orange-600 border-orange-200"
-                                    >
-                                      Expiring Soon
-                                    </Badge>
-                                  )}
-                              </div>
+                              </>
                             ) : (
-                              <span className="text-gray-400 text-sm">
-                                No Expiry
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {user.location ? (
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">
-                                  {user.location}
+                              <>
+                                <XCircle className="h-4 w-4 text-red-600" />
+                                <span className="text-red-600 font-medium">
+                                  Inactive
                                 </span>
-                              </div>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              getBusinessTypeBadge(user.businessType).variant
+                            }
+                          >
+                            {getBusinessTypeBadge(user.businessType).label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {user.accountLimit ? (
+                              <>
+                                <CreditCard className="h-4 w-4 text-gray-400" />
+                                <span className="font-mono text-sm">
+                                  {formatAccountLimit(user.accountLimit)}
+                                </span>
+                              </>
                             ) : (
                               <span className="text-gray-400 text-sm">
                                 Not Set
                               </span>
                             )}
-                          </TableCell>
-                          {viewMode === "all-users-by-type" && (
-                            <TableCell>
-                              {user.createdBy ? (
-                                <div className="space-y-1">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {user.createdBy.username}
-                                  </div>
-                                  <div className="text-xs text-gray-500">
-                                    {user.createdBy.email}
-                                  </div>
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 text-sm">
-                                  System
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {user.expiryDate ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-gray-400" />
+                                <span className="text-sm">
+                                  {formatDate(user.expiryDate)}
                                 </span>
+                              </div>
+                              {isExpired(user.expiryDate) && (
+                                <Badge
+                                  variant="destructive"
+                                  className="text-xs"
+                                >
+                                  Expired
+                                </Badge>
                               )}
-                            </TableCell>
+                              {isExpiringSoon(user.expiryDate) &&
+                                !isExpired(user.expiryDate) && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs text-orange-600 border-orange-200"
+                                  >
+                                    Expiring Soon
+                                  </Badge>
+                                )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">
+                              No Expiry
+                            </span>
                           )}
-                          <TableCell className="text-sm text-gray-500">
-                            {formatDate(user.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          {user.location ? (
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              <span className="text-sm text-gray-600">
+                                {user.location}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">
+                              Not Set
+                            </span>
+                          )}
+                        </TableCell>
+                        {viewMode === "all-users-by-type" && (
+                          <TableCell>
+                            {user.createdBy ? (
+                              <div className="space-y-1">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.createdBy.username}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {user.createdBy.email}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">
+                                System
+                              </span>
+                            )}
                           </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0"
-                                  disabled={isSubmitting}
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem
-                                  onClick={() => handleViewUser(user)}
-                                >
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleEditUser(user)}
-                                >
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit User
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-red-600"
-                                  onClick={() => handleDeleteUser(user.id)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete User
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                        )}
+                        <TableCell className="text-sm text-gray-500">
+                          {formatDate(user.createdAt)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                disabled={isSubmitting}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() => handleViewUser(user)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleEditUser(user)}
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit User
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleDeleteUser(user.id)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete User
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -903,36 +885,6 @@ export function SystemOwnerUsersList() {
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>
-              </div>
-            )}
-
-            {/* Empty State */}
-            {currentUsers.length === 0 && (
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No users found
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {viewMode === "my-users" &&
-                  (filters.search ||
-                    filters.role !== "all" ||
-                    filters.isActive !== "all")
-                    ? "Try adjusting your search or filter criteria."
-                    : viewMode === "my-users"
-                    ? "Get started by adding your first user."
-                    : "No users found in the system."}
-                </p>
-                <UserFormModal
-                  trigger={
-                    <Button disabled={isSubmitting}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Add User
-                    </Button>
-                  }
-                  onSubmit={handleCreateUser}
-                  userType="system_owner"
-                />
               </div>
             )}
           </CardContent>
