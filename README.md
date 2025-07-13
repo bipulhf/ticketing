@@ -301,33 +301,66 @@ frontend/
 - **Database connection pooling** for performance
 - **Migration system** for schema updates
 
-### Setup Instructions
+### Setup Instructions (For Server Deployment using Docker CLI)
 
-1. **Download and Install Docker**
-   Install Docker from the official site: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+1. **Install Docker and Docker Compose**
 
-2. **Navigate to the Project Directory**
-   Open your terminal and change to the root directory of the project.
+   Make sure Docker and Docker Compose are installed on your server.
 
-3. **Start the Application**
-   Run the following command to build and start the services:
+   **Install Docker:**
 
    ```bash
-   docker compose up --build -d
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sudo sh get-docker.sh
    ```
 
-4. **Access the Application**
-   Once the services are up, the system will be available at:
-   [http://localhost:80](http://localhost:80)
+   **Install Docker Compose (if not included):**
 
-5. **Default System Owner Account**
-   A System Owner account will be created automatically with the following credentials:
+   ```bash
+   sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+   sudo chmod +x /usr/local/bin/docker-compose
+   ```
+
+2. **Navigate to the Project Directory**
+
+   ```bash
+   cd /path/to/your/project
+   ```
+
+3. **Update `UPLOADTHING_CALLBACK_URL`**
+
+   Open the `docker-compose.yml` file and **update the `UPLOADTHING_CALLBACK_URL`** environment variable with your actual domain name or IP.
+
+   Example:
+
+   ```yaml
+   environment:
+     UPLOADTHING_CALLBACK_URL: "https://yourdomain.com"
+   ```
+
+4. **Build and Start the Application**
+
+   Use Docker Compose to build and run the application in detached mode:
+
+   ```bash
+   sudo docker compose up --build -d
+   ```
+
+5. **Access the Application**
+
+   Once the services are up and running, you can access the system via:
+
+   - **URL:** [http://your-server-ip-or-domain](http://your-server-ip-or-domain)
+
+6. **Default System Owner Account**
+
+   A default **System Owner** account will be created automatically:
 
    - **Username:** `system_owner`
    - **Password:** `defaultPassword123!`
 
-6. **User Account Policy**
+7. **User Account Policy**
 
    - Each user must register with a **unique username**.
    - The default password for all new users is: `defaultPassword123!`
-   - Users are encouraged to change their password after logging in.
+   - All users are strongly encouraged to **change their password** after first login.
