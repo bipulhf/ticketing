@@ -57,7 +57,6 @@ export interface GetTicketsFilters {
   search?: string;
   department?: string;
   location?: string;
-  user_department?: string;
 }
 
 export class TicketService {
@@ -438,7 +437,6 @@ export class TicketService {
       search,
       department,
       location,
-      user_department,
     } = filters;
 
     // Build where clause based on user role and access permissions
@@ -467,19 +465,14 @@ export class TicketService {
       ];
     }
 
-    // Add department filter
-    if (department) {
-      whereClause.department = department;
-    }
-
     // Add location filter
     if (location) {
       whereClause.location = location;
     }
 
     // Add user department filter
-    if (user_department) {
-      whereClause.user_department = user_department;
+    if (department) {
+      whereClause.user_department = department;
     }
 
     // Apply role-based access control

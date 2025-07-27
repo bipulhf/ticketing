@@ -99,6 +99,8 @@ export class TicketController {
         fromDate: req.query.fromDate as string,
         toDate: req.query.toDate as string,
         search: req.query.search as string,
+        location: req.query.location as string,
+        department: req.query.department as string,
       };
 
       const result = await TicketService.getTickets(userId!, filters);

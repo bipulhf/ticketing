@@ -245,9 +245,21 @@ export class UserService {
       department: ITDepartment | null;
     } | null = null;
 
+    let superAdmin: {
+      userLocation: Location | null;
+      department: ITDepartment | null;
+    } | null = null;
+
     if (hierarchyData.adminId) {
       admin = await prisma.user.findUnique({
         where: { id: hierarchyData.adminId },
+        select: { userLocation: true, department: true },
+      });
+    }
+
+    if (hierarchyData.superAdminId) {
+      superAdmin = await prisma.user.findUnique({
+        where: { id: hierarchyData.superAdminId },
         select: { userLocation: true, department: true },
       });
     }
@@ -264,7 +276,8 @@ export class UserService {
         expiryDate: userData.expiryDate,
         locations: userData.role === "super_admin" ? userData.locations : [],
         userLocation: admin?.userLocation || userData.userLocation,
-        department: admin?.department || userData.department,
+        department:
+          superAdmin?.department || admin?.department || userData.department,
         createdById: creatorId,
         ...hierarchyData,
       },

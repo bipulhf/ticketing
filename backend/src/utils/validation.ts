@@ -125,7 +125,7 @@ export function validateUserCreationData(
   const errors: string[] = [];
 
   // Validate department assignment based on role
-  if (["super_admin", "admin", "it_person"].includes(data.role)) {
+  if (["super_admin"].includes(data.role)) {
     if (!data.department) {
       errors.push("Department is required for this role");
     } else if (!isValidITDepartment(data.department)) {
