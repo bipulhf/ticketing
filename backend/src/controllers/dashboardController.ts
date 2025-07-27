@@ -84,7 +84,7 @@ export class DashboardController {
           businessType: true,
           accountLimit: true,
           expiryDate: true,
-          location: true,
+          locations: true,
           createdAt: true,
           _count: {
             select: {
@@ -105,9 +105,11 @@ export class DashboardController {
       const now = new Date();
       const superAdminOverview = superAdmins.map((admin) => ({
         ...admin,
-        accountsCreated: admin._count.createdUsers,
+        accountsCreated: admin._count?.createdUsers || 0,
         accountUtilization: admin.accountLimit
-          ? Math.round((admin._count.createdUsers / admin.accountLimit) * 100)
+          ? Math.round(
+              ((admin._count?.createdUsers || 0) / admin.accountLimit) * 100
+            )
           : 0,
         expiryStatus: admin.expiryDate
           ? admin.expiryDate > now

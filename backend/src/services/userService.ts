@@ -1,4 +1,10 @@
-import { User, UserRole, BusinessType } from "@prisma/client";
+import {
+  User,
+  UserRole,
+  BusinessType,
+  ITDepartment,
+  Location,
+} from "@prisma/client";
 import { prisma } from "../config/prisma";
 import { hashPassword } from "../utils/password";
 import { createError } from "../middlewares/errorMiddleware";
@@ -7,6 +13,7 @@ import {
   ERROR_MESSAGES,
   ACCOUNT_LIMITS,
   PASSWORD_CONFIG,
+  ROLE_HIERARCHY,
 } from "../utils/constants";
 import { canCreateAccount, canManageUser } from "../middlewares/roleMiddleware";
 import {
@@ -15,6 +22,7 @@ import {
   buildPaginationFilter,
   calculatePaginationInfo,
 } from "../utils/filter";
+import { validateUserCreationData } from "../utils/validation";
 
 export interface CreateUserRequest {
   username: string;
@@ -24,7 +32,9 @@ export interface CreateUserRequest {
   businessType?: BusinessType;
   accountLimit?: number;
   expiryDate?: Date;
-  location?: string;
+  department?: ITDepartment;
+  locations?: Location[];
+  userLocation?: Location;
 }
 
 export interface UpdateUserRequest {
@@ -33,7 +43,9 @@ export interface UpdateUserRequest {
   businessType?: BusinessType;
   accountLimit?: number;
   expiryDate?: Date;
-  location?: string;
+  department?: ITDepartment;
+  locations?: Location[];
+  userLocation?: Location;
   isActive?: boolean;
 }
 
@@ -65,6 +77,9 @@ export class UserService {
         businessType: true,
         isActive: true,
         expiryDate: true,
+        department: true,
+        locations: true,
+        userLocation: true,
       },
     });
 
@@ -113,6 +128,22 @@ export class UserService {
       }
     }
 
+    // Apply department and location inheritance based on role hierarchy
+    const inheritedData = await this.applyDepartmentLocationInheritance(
+      userData,
+      creator,
+      creatorId
+    );
+
+    // Validate the final user data
+    const validation = validateUserCreationData(inheritedData, creator.role);
+    if (!validation.isValid) {
+      throw createError(
+        `Validation failed: ${validation.errors.join(", ")}`,
+        HTTP_STATUS.BAD_REQUEST
+      );
+    }
+
     // For super_admin creation, validate business type and set account limits
     if (userData.role === "super_admin") {
       if (!userData.businessType) {
@@ -121,17 +152,61 @@ export class UserService {
           HTTP_STATUS.BAD_REQUEST
         );
       }
-      if (!userData.location) {
-        throw createError(
-          "Location is required for Super Admin accounts",
-          HTTP_STATUS.BAD_REQUEST
-        );
-      }
       // Set account limit based on business type
-      userData.accountLimit = ACCOUNT_LIMITS[userData.businessType];
+      inheritedData.accountLimit = ACCOUNT_LIMITS[userData.businessType];
     }
 
-    return this.createUser(userData, creatorId);
+    return this.createUser(inheritedData, creatorId);
+  }
+
+  private static async applyDepartmentLocationInheritance(
+    userData: CreateUserRequest,
+    creator: any,
+    creatorId: string
+  ): Promise<CreateUserRequest> {
+    const inheritedData = { ...userData };
+
+    // Apply department inheritance
+    if (
+      ROLE_HIERARCHY[userData.role as keyof typeof ROLE_HIERARCHY]
+        ?.departmentInheritance
+    ) {
+      if (userData.role === "super_admin") {
+        // Super Admin inherits department from System Owner
+        inheritedData.department = creator.department;
+      } else if (["admin", "it_person"].includes(userData.role)) {
+        // Admin and IT Person inherit department from their creator
+        inheritedData.department = creator.department;
+      }
+    }
+
+    // Apply location inheritance
+    if (
+      ROLE_HIERARCHY[userData.role as keyof typeof ROLE_HIERARCHY]
+        ?.locationInheritance
+    ) {
+      if (userData.role === "super_admin") {
+        // Super Admin inherits multiple locations from System Owner
+        inheritedData.locations = creator.locations;
+      } else if (["admin", "it_person"].includes(userData.role)) {
+        // Admin and IT Person inherit single location from their creator
+        // For Super Admin creating Admin/IT Person, assign one of their locations
+        if (
+          creator.role === "super_admin" &&
+          creator.locations &&
+          creator.locations.length > 0
+        ) {
+          inheritedData.userLocation = creator.locations[0]; // Assign first location
+        } else {
+          inheritedData.userLocation = creator.userLocation;
+        }
+      } else if (userData.role === "user") {
+        // Normal users inherit location from IT Person
+        inheritedData.userLocation = creator.userLocation;
+      }
+    }
+
+    return inheritedData;
   }
 
   static async createUser(
@@ -152,95 +227,95 @@ export class UserService {
       );
     }
 
-    // Get creator information to determine hierarchy relationships
+    // Hash password
+    const hashedPassword = await hashPassword(userData.password);
+
+    // Prepare hierarchy tracking data
+    const hierarchyData = await this.buildHierarchyData(
+      creatorId,
+      userData.role
+    );
+
+    // Create user with department and location data
+    const user = await prisma.user.create({
+      data: {
+        username: userData.username,
+        email: userData.email,
+        password: hashedPassword,
+        role: userData.role,
+        businessType: userData.businessType,
+        accountLimit: userData.accountLimit,
+        expiryDate: userData.expiryDate,
+        department: userData.department,
+        locations: userData.locations,
+        userLocation: userData.userLocation,
+        createdById: creatorId,
+        ...hierarchyData,
+      },
+    });
+
+    return user;
+  }
+
+  private static async buildHierarchyData(
+    creatorId: string,
+    userRole: UserRole
+  ): Promise<any> {
     const creator = await prisma.user.findUnique({
       where: { id: creatorId },
-      select: {
-        id: true,
-        role: true,
-        systemOwnerId: true,
-        superAdminId: true,
-        adminId: true,
-        itPersonId: true,
-      },
+      select: { role: true },
     });
 
     if (!creator) {
       throw createError("Creator not found", HTTP_STATUS.NOT_FOUND);
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(userData.password);
+    const hierarchyData: any = {};
 
-    // Set account limits for super admin
-    let accountLimit = userData.accountLimit;
-    if (userData.role === "super_admin" && userData.businessType) {
-      accountLimit = ACCOUNT_LIMITS[userData.businessType];
-    }
-
-    // Determine hierarchy field values based on creator's role
-    let hierarchyFields: {
-      systemOwnerId?: string;
-      superAdminId?: string;
-      adminId?: string;
-      itPersonId?: string;
-    } = {};
-
-    // Set hierarchy based on who is creating the user
+    // Set hierarchy tracking based on creator role
     switch (creator.role) {
       case "system_owner":
-        hierarchyFields.systemOwnerId = creator.id;
+        hierarchyData.systemOwnerId = creatorId;
         break;
       case "super_admin":
-        hierarchyFields.superAdminId = creator.id;
-        // Inherit system owner from creator if they have one
-        if (creator.systemOwnerId) {
-          hierarchyFields.systemOwnerId = creator.systemOwnerId;
+        hierarchyData.superAdminId = creatorId;
+        // Inherit system owner from creator
+        const superAdmin = await prisma.user.findUnique({
+          where: { id: creatorId },
+          select: { systemOwnerId: true },
+        });
+        if (superAdmin?.systemOwnerId) {
+          hierarchyData.systemOwnerId = superAdmin.systemOwnerId;
         }
         break;
       case "admin":
-        hierarchyFields.adminId = creator.id;
-        // Inherit higher hierarchy from creator
-        if (creator.superAdminId) {
-          hierarchyFields.superAdminId = creator.superAdminId;
-        }
-        if (creator.systemOwnerId) {
-          hierarchyFields.systemOwnerId = creator.systemOwnerId;
+        hierarchyData.adminId = creatorId;
+        // Inherit super admin and system owner from creator
+        const admin = await prisma.user.findUnique({
+          where: { id: creatorId },
+          select: { superAdminId: true, systemOwnerId: true },
+        });
+        if (admin) {
+          hierarchyData.superAdminId = admin.superAdminId;
+          hierarchyData.systemOwnerId = admin.systemOwnerId;
         }
         break;
       case "it_person":
-        hierarchyFields.itPersonId = creator.id;
-        // Inherit higher hierarchy from creator
-        if (creator.adminId) {
-          hierarchyFields.adminId = creator.adminId;
-        }
-        if (creator.superAdminId) {
-          hierarchyFields.superAdminId = creator.superAdminId;
-        }
-        if (creator.systemOwnerId) {
-          hierarchyFields.systemOwnerId = creator.systemOwnerId;
+        hierarchyData.itPersonId = creatorId;
+        // Inherit admin, super admin, and system owner from creator
+        const itPerson = await prisma.user.findUnique({
+          where: { id: creatorId },
+          select: { adminId: true, superAdminId: true, systemOwnerId: true },
+        });
+        if (itPerson) {
+          hierarchyData.adminId = itPerson.adminId;
+          hierarchyData.superAdminId = itPerson.superAdminId;
+          hierarchyData.systemOwnerId = itPerson.systemOwnerId;
         }
         break;
     }
 
-    // Create user
-    const newUser = await prisma.user.create({
-      data: {
-        username: userData.username,
-        email: userData.email,
-        password: hashedPassword,
-        role: userData.role,
-        businessType: userData.businessType || null,
-        accountLimit: accountLimit || null,
-        expiryDate: userData.expiryDate || null,
-        location: userData.location || null,
-        createdById: creatorId || null,
-        isActive: true,
-        ...hierarchyFields,
-      },
-    });
-
-    return newUser;
+    return hierarchyData;
   }
 
   static async updateUser(
@@ -287,7 +362,11 @@ export class UserService {
         }),
         ...(accountLimit && { accountLimit }),
         ...(updateData.expiryDate && { expiryDate: updateData.expiryDate }),
-        ...(updateData.location && { location: updateData.location }),
+        ...(updateData.department && { department: updateData.department }),
+        ...(updateData.locations && { locations: updateData.locations }),
+        ...(updateData.userLocation && {
+          userLocation: updateData.userLocation,
+        }),
         ...(updateData.isActive !== undefined && {
           isActive: updateData.isActive,
         }),
@@ -348,7 +427,9 @@ export class UserService {
           businessType: true,
           accountLimit: true,
           expiryDate: true,
-          location: true,
+          department: true,
+          locations: true,
+          userLocation: true,
           createdAt: true,
           isActive: true,
         },
@@ -485,7 +566,9 @@ export class UserService {
         businessType: true,
         accountLimit: true,
         expiryDate: true,
-        location: true,
+        department: true,
+        locations: true,
+        userLocation: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -514,7 +597,9 @@ export class UserService {
           businessType: true,
           accountLimit: true,
           expiryDate: true,
-          location: true,
+          department: true,
+          locations: true,
+          userLocation: true,
           createdAt: true,
           updatedAt: true,
           createdBy: {

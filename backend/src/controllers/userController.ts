@@ -234,7 +234,7 @@ export class UserController {
             businessType: true,
             accountLimit: true,
             expiryDate: true,
-            location: true,
+            locations: true,
             createdAt: true,
             updatedAt: true,
           },

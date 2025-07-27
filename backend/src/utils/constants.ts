@@ -23,6 +23,109 @@ export const TICKET_STATUSES = {
   SOLVED: "solved",
 } as const;
 
+// IT Departments for Admin & IT Person
+export const IT_DEPARTMENTS = {
+  IT_OPERATIONS: "it_operations",
+  IT_QCS: "it_qcs",
+} as const;
+
+// User Departments for display/filtering (Normal Users)
+export const USER_DEPARTMENTS = {
+  QA: "qa",
+  QC: "qc",
+  PRODUCTION: "production",
+  MICROBIOLOGY: "microbiology",
+  HSE: "hse",
+  ENGINEERING: "engineering",
+  MARKETING: "marketing",
+  ACCOUNTS: "accounts",
+  VALIDATION: "validation",
+  PPIC: "ppic",
+  WAREHOUSE: "warehouse",
+  DEVELOPMENT: "development",
+} as const;
+
+// Locations for all roles
+export const LOCATIONS = {
+  TONGI: "tongi",
+  SALNA: "salna",
+  MIRPUR: "mirpur",
+  MAWNA: "mawna",
+  RUPGANJ: "rupganj",
+} as const;
+
+// Role hierarchy for department and location inheritance
+export const ROLE_HIERARCHY = {
+  SYSTEM_OWNER: {
+    canCreate: ["super_admin"],
+    departmentInheritance: false, // System Owner assigns department
+    locationInheritance: false, // System Owner assigns multiple locations
+  },
+  SUPER_ADMIN: {
+    canCreate: ["admin", "it_person"],
+    departmentInheritance: true, // Inherits department from System Owner
+    locationInheritance: true, // Inherits locations from System Owner
+  },
+  ADMIN: {
+    canCreate: ["it_person", "user"],
+    departmentInheritance: true, // Inherits department from Super Admin
+    locationInheritance: true, // Inherits single location from Super Admin
+  },
+  IT_PERSON: {
+    canCreate: ["user"],
+    departmentInheritance: true, // Inherits department from Admin
+    locationInheritance: true, // Inherits single location from Admin
+  },
+  USER: {
+    canCreate: [],
+    departmentInheritance: false, // Users select department at ticket creation
+    locationInheritance: true, // Inherits location from IT Person
+  },
+} as const;
+
+// Utility functions for frontend integration
+export const getDepartmentOptions = (role: string) => {
+  if (["super_admin", "admin", "it_person"].includes(role)) {
+    return Object.entries(IT_DEPARTMENTS).map(([key, value]) => ({
+      label: key.replace(/_/g, " ").toUpperCase(),
+      value: value,
+    }));
+  }
+  return Object.entries(USER_DEPARTMENTS).map(([key, value]) => ({
+    label: key.charAt(0).toUpperCase() + key.slice(1).toLowerCase(),
+    value: value,
+  }));
+};
+
+export const getLocationOptions = () => {
+  return Object.entries(LOCATIONS).map(([key, value]) => ({
+    label: key.charAt(0).toUpperCase() + key.slice(1).toLowerCase(),
+    value: value,
+  }));
+};
+
+export const getRoleDisplayName = (role: string) => {
+  const roleNames = {
+    system_owner: "System Owner",
+    super_admin: "Super Admin",
+    admin: "Admin",
+    it_person: "IT Person",
+    user: "User",
+  };
+  return roleNames[role as keyof typeof roleNames] || role;
+};
+
+export const getDepartmentDisplayName = (department: string) => {
+  if (Object.values(IT_DEPARTMENTS).includes(department as any)) {
+    return department.replace(/_/g, " ").toUpperCase();
+  }
+  return department.charAt(0).toUpperCase() + department.slice(1).toLowerCase();
+};
+
+export const getLocationDisplayName = (location: string) => {
+  return location.charAt(0).toUpperCase() + location.slice(1).toLowerCase();
+};
+
 export const ATTACHMENT_CONFIG = {
   MAX_ATTACHMENTS_PER_TICKET: 10,
   ALLOWED_FILE_TYPES: [
@@ -87,4 +190,16 @@ export const ERROR_MESSAGES = {
   UNAUTHORIZED_ACTION: "Unauthorized to perform this action",
   NOTES_REQUIRED: "Notes are required when closing a ticket",
   CANNOT_RESET_PASSWORD: "Cannot reset password for this user",
+  DEPARTMENT_REQUIRED: "Department is required for this role",
+  LOCATION_REQUIRED: "Location is required for this role",
+  INVALID_IP_FORMAT: "Invalid IP address format",
+  DEVICE_NAME_REQUIRED: "Device name is required",
+  IP_NUMBER_REQUIRED: "IP number is required",
+  IP_ADDRESS_REQUIRED: "IP address is required",
+  INVALID_DEPARTMENT: "Invalid department for this role",
+  INVALID_LOCATION: "Invalid location",
+  MULTIPLE_LOCATIONS_REQUIRED:
+    "Multiple locations are required for Super Admin",
+  SINGLE_LOCATION_REQUIRED:
+    "Only one location can be assigned to Admin/IT Person",
 } as const;

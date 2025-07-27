@@ -148,7 +148,7 @@ export class AuthService {
         businessType: businessType || null,
         accountLimit: accountLimit || null,
         expiryDate: expiryDate || null,
-        location: location || null,
+        locations: location ? [location as any] : [],
         createdById: createdById || null,
         isActive: true,
       },
@@ -160,7 +160,7 @@ export class AuthService {
         businessType: true,
         accountLimit: true,
         expiryDate: true,
-        location: true,
+        locations: true,
         createdAt: true,
       },
     });

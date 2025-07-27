@@ -28,6 +28,34 @@ enum TicketStatus {
   solved
 }
 
+enum ITDepartment {
+  it_operations
+  it_qcs
+}
+
+enum UserDepartment {
+  qa
+  qc
+  production
+  microbiology
+  hse
+  engineering
+  marketing
+  accounts
+  validation
+  ppic
+  warehouse
+  development
+}
+
+enum Location {
+  tongi
+  salna
+  mirpur
+  mawna
+  rupganj
+}
+
 model User {
   id            String      @id @default(cuid())
   username      String      @unique
@@ -62,7 +90,11 @@ model User {
   businessType  BusinessType?
   accountLimit  Int?
   expiryDate    DateTime?
-  location      String?
+  
+  // New department and location fields
+  department    ITDepartment?     // For super_admin, admin, it_person
+  locations     Location[]        // Multiple locations for super_admin, single for others
+  userLocation  Location?         // Single location inheritance for normal users
   
   // Tickets
   createdTickets Ticket[]   @relation("TicketCreatedBy")
@@ -79,10 +111,15 @@ model Ticket {
   status        TicketStatus  @default(pending)
   notes         String?       // Notes added when closing ticket
   
-  // New fields for device information
-  ip_address    String?       // IP address of the device
-  device_name   String?       // Name of the device
-  ip_number     String?       // IP number (alternative IP field)
+  // Device and contact information (required)
+  ip_address    String?        // Required: Only valid IP, not alternative format
+  device_name   String?        // Required: Device name
+  ip_number     String?    // IP number (alternative IP field)
+  
+  // Department information (required)
+  department    ITDepartment @default(it_operations)  // Required: IT Operations or IT QCS
+  user_department UserDepartment? // Optional: User's department for display/filtering
+  location      Location?      // Required: Location for filtering
   
   // Relationships
   createdById   String
@@ -119,10 +156,15 @@ model ArchivedTicket {
   status        TicketStatus
   notes         String?
   
-  // New fields for device information (matching Ticket model)
-  ip_address    String?       // IP address of the device
-  device_name   String?       // Name of the device
-  ip_number     String?       // IP number (alternative IP field)
+  // Device and contact information
+  ip_address    String        // Required: Only valid IP format
+  device_name   String        // Required: Device name
+  ip_number     String        // Required: IP number field
+  
+  // Department information
+  department    ITDepartment  // Required: IT Operations or IT QCS
+  user_department UserDepartment? // Optional: User's department for display/filtering
+  location      Location?      // Required: Location for filtering
   
   createdById   String
   createdAt     DateTime

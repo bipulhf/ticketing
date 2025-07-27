@@ -22,7 +22,7 @@
   "author": "IT Helpdesk Team",
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^5.7.1",
+    "@prisma/client": "^6.12.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -48,7 +48,7 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.0.2",
-    "prisma": "^5.7.1",
+    "prisma": "^6.12.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
