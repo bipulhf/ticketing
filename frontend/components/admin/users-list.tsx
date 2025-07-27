@@ -520,6 +520,7 @@ export function AdminUsersList() {
                     <TableHead className="font-semibold">Expiry Date</TableHead>
                     <TableHead className="font-semibold">Location</TableHead>
                     <TableHead className="font-semibold">Created</TableHead>
+                    <TableHead className="font-semibold">Created At</TableHead>
                     <TableHead className="font-semibold text-right">
                       Actions
                     </TableHead>
@@ -689,24 +690,6 @@ export function AdminUsersList() {
                                 {user.userLocation.charAt(0).toUpperCase() +
                                   user.userLocation.slice(1).toLowerCase()}
                               </span>
-                            </div>
-                          ) : user.locations && user.locations.length > 0 ? (
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-gray-400" />
-                              <div className="flex flex-wrap gap-1">
-                                {user.locations.map(
-                                  (location: string, index: number) => (
-                                    <Badge
-                                      key={location}
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      {location.charAt(0).toUpperCase() +
-                                        location.slice(1).toLowerCase()}
-                                    </Badge>
-                                  )
-                                )}
-                              </div>
                             </div>
                           ) : (
                             <span className="text-gray-400 text-sm">

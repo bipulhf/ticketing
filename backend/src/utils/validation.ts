@@ -70,14 +70,8 @@ export function validateTicketRequiredFields(data: {
   const errors: string[] = [];
 
   // Required fields validation
-  if (!data.ip_address) {
-    errors.push("IP address is required");
-  } else if (!isValidIPAddress(data.ip_address)) {
+  if (data.ip_address && !isValidIPAddress(data.ip_address)) {
     errors.push("Invalid IP address format");
-  }
-
-  if (!data.device_name) {
-    errors.push("Device name is required");
   }
 
   if (!data.ip_number) {

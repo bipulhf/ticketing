@@ -46,6 +46,7 @@ import {
   Monitor,
   Building,
   MapPin,
+  Phone,
 } from "lucide-react";
 import { useUploadThing } from "@/lib/utils";
 import {
@@ -65,24 +66,15 @@ const createTicketSchema = z.object({
     .max(1000, "Description must not exceed 1000 characters"),
   ip_address: z
     .string()
-    .min(1, "IP address is required")
+    .optional()
+    .nullable()
     .refine((val) => {
       const ipRegex =
         /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-      return ipRegex.test(val);
+      return val ? ipRegex.test(val) : true;
     }, "Please enter a valid IPv4 address"),
-  device_name: z
-    .string()
-    .min(1, "Device name is required")
-    .max(100, "Device name must not exceed 100 characters"),
-  ip_number: z
-    .string()
-    .min(1, "IP number is required")
-    .refine((val) => {
-      const ipRegex =
-        /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-      return ipRegex.test(val);
-    }, "Please enter a valid IPv4 address"),
+  device_name: z.string().optional().nullable(),
+  ip_number: z.string().min(1, "IP number is required"),
   department: z.enum(["it_operations", "it_qcs"], {
     required_error: "Department is required",
   }),
@@ -142,9 +134,9 @@ export function CreateTicketModal({
       if (res) {
         const newFiles = res.map((file) => ({
           name: file.name,
-          url: file.url,
+          url: file.ufsUrl,
           size: file.size,
-          type: file.type,
+          type: file.type.split("/")[1],
         }));
         setUploadedFiles((prev) => [...prev, ...newFiles]);
         setIsUploading(false);
@@ -198,8 +190,8 @@ export function CreateTicketModal({
     try {
       const result = await createTicketWithFiles({
         description: data.description,
-        ip_address: data.ip_address,
-        device_name: data.device_name,
+        ip_address: data.ip_address || "",
+        device_name: data.device_name || "",
         ip_number: data.ip_number,
         department: data.department,
         location: data.location,
@@ -284,7 +276,8 @@ export function CreateTicketModal({
                     <FormControl>
                       <Input
                         placeholder="e.g., PC-001, Laptop-Admin"
-                        {...field}
+                        value={field.value || ""}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -302,7 +295,11 @@ export function CreateTicketModal({
                       IP Address
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., 192.168.1.100" {...field} />
+                      <Input
+                        placeholder="e.g., 192.168.1.100"
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -317,11 +314,15 @@ export function CreateTicketModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
-                    <Wifi className="h-4 w-4" />
-                    IP Number
+                    <Phone className="h-4 w-4" />
+                    IP Number / Contact Number
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 192.168.1.100" {...field} />
+                    <Input
+                      placeholder="e.g., 01717171717"
+                      {...field}
+                      required
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -329,7 +330,7 @@ export function CreateTicketModal({
             />
 
             {/* Department and Location */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
               <FormField
                 control={form.control}
                 name="department"
@@ -344,7 +345,7 @@ export function CreateTicketModal({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select department" />
                         </SelectTrigger>
                       </FormControl>
@@ -379,7 +380,7 @@ export function CreateTicketModal({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select location" />
                         </SelectTrigger>
                       </FormControl>
@@ -409,14 +410,14 @@ export function CreateTicketModal({
                 control={form.control}
                 name="user_department"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col gap-2">
                     <FormLabel className="flex items-center gap-2">
                       <Building className="h-4 w-4" />
                       Your Department
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select your department" />
                         </SelectTrigger>
                       </FormControl>

@@ -235,6 +235,7 @@ export class UserController {
             accountLimit: true,
             expiryDate: true,
             locations: true,
+            userLocation: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -436,6 +437,29 @@ export class UserController {
         success: true,
         user,
         message: "Password reset successfully to default password",
+      });
+      return;
+    }
+  );
+
+  static getAvailableLocations = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not authenticated" },
+        });
+      }
+
+      const availableLocations = await UserService.getAvailableLocations(
+        userId
+      );
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: availableLocations,
       });
       return;
     }

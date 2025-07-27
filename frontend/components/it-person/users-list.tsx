@@ -518,6 +518,7 @@ export function ItPersonUsersList() {
                     <TableHead className="font-semibold">Expiry Date</TableHead>
                     <TableHead className="font-semibold">Location</TableHead>
                     <TableHead className="font-semibold">Created</TableHead>
+                    <TableHead className="font-semibold">Created At</TableHead>
                     <TableHead className="font-semibold text-right">
                       Actions
                     </TableHead>

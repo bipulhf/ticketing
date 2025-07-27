@@ -14,6 +14,7 @@ import {
   ACCOUNT_LIMITS,
   PASSWORD_CONFIG,
   ROLE_HIERARCHY,
+  LOCATIONS,
 } from "../utils/constants";
 import { canCreateAccount, canManageUser } from "../middlewares/roleMiddleware";
 import {
@@ -845,5 +846,88 @@ export class UserService {
     // Return user without password field
     const { password, ...userWithoutPassword } = updatedUser;
     return userWithoutPassword;
+  }
+
+  static async getAvailableLocations(userId: string): Promise<{
+    locations: Location[];
+    userLocation: Location | null;
+    canSelectMultiple: boolean;
+  }> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        locations: true,
+        userLocation: true,
+        systemOwnerId: true,
+        superAdminId: true,
+        adminId: true,
+      },
+    });
+
+    if (!user) {
+      throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    // System Owner can assign any locations to Super Admin
+    if (user.role === "system_owner") {
+      return {
+        locations: Object.values(LOCATIONS),
+        userLocation: null,
+        canSelectMultiple: true,
+      };
+    }
+
+    // Super Admin can assign one of their locations to Admin/IT Person
+    if (user.role === "super_admin") {
+      if (!user.locations || user.locations.length === 0) {
+        throw createError(
+          "Super Admin has no assigned locations",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      return {
+        locations: user.locations,
+        userLocation: null,
+        canSelectMultiple: false,
+      };
+    }
+
+    // Admin can assign their location to IT Person/User
+    if (user.role === "admin") {
+      if (!user.userLocation) {
+        throw createError(
+          "Admin has no assigned location",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      return {
+        locations: [user.userLocation],
+        userLocation: user.userLocation,
+        canSelectMultiple: false,
+      };
+    }
+
+    // IT Person can assign their location to User
+    if (user.role === "it_person") {
+      if (!user.userLocation) {
+        throw createError(
+          "IT Person has no assigned location",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      return {
+        locations: [user.userLocation],
+        userLocation: user.userLocation,
+        canSelectMultiple: false,
+      };
+    }
+
+    // Normal users cannot assign locations
+    throw createError(
+      "Users cannot assign locations to other users",
+      HTTP_STATUS.FORBIDDEN
+    );
   }
 }

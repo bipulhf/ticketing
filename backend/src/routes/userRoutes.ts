@@ -704,6 +704,185 @@ router.get(
 
 /**
  * @swagger
+ * /api/users/available-locations:
+ *   get:
+ *     summary: Get available locations for user creation
+ *     description: Get the available locations that the current user can assign when creating new users based on their role hierarchy.
+ *     tags: [User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Available locations retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     locations:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         enum: [tongi, salna, mirpur, mawna, rupganj]
+ *                       description: Available locations for assignment
+ *                       example: ["tongi", "salna"]
+ *                     userLocation:
+ *                       type: string
+ *                       nullable: true
+ *                       enum: [tongi, salna, mirpur, mawna, rupganj]
+ *                       description: Current user's assigned location (if applicable)
+ *                       example: "tongi"
+ *                     canSelectMultiple:
+ *                       type: boolean
+ *                       description: Whether multiple locations can be selected
+ *                       example: true
+ *       400:
+ *         description: User has no assigned locations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - User cannot assign locations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get("/available-locations", UserController.getAvailableLocations);
+
+/**
+ * @swagger
+ * /api/users/self/profile:
+ *   put:
+ *     summary: Update self profile
+ *     description: Update authenticated user's own profile information (excluding password)
+ *     tags: [User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: Updated username
+ *                 example: "new_username"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Updated email address
+ *                 example: "new.email@company.com"
+ *               location:
+ *                 type: string
+ *                 description: Updated location
+ *                 example: "New Office Location"
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *                     message:
+ *                       type: string
+ *                       example: "Profile updated successfully"
+ *       400:
+ *         description: Invalid request data or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       409:
+ *         description: Conflict - Username or email already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.put("/self/profile", UserController.updateSelfProfile);
+
+/**
+ * @swagger
+ * /api/users/self/password:
+ *   put:
+ *     summary: Update self password
+ *     description: Update authenticated user's own password with current password verification
+ *     tags: [User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 description: Current password for verification
+ *                 example: "oldPassword123!"
+ *               newPassword:
+ *                 type: string
+ *                 description: New password (must meet strength requirements)
+ *                 example: "NewSecurePass123!"
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: "Password updated successfully"
+ *       400:
+ *         description: Invalid request data, password validation failed, or current password incorrect
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.put("/self/password", UserController.updateSelfPassword);
+
+/**
+ * @swagger
  * /api/users/{id}:
  *   get:
  *     summary: Get user by ID
@@ -896,124 +1075,6 @@ router.put("/:id", UserController.updateUser);
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.delete("/:id", UserController.deleteUser);
-
-/**
- * @swagger
- * /api/users/self/profile:
- *   put:
- *     summary: Update self profile
- *     description: Update authenticated user's own profile information (excluding password)
- *     tags: [User Management]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 description: Updated username
- *                 example: "new_username"
- *               email:
- *                 type: string
- *                 format: email
- *                 description: Updated email address
- *                 example: "new.email@company.com"
- *               location:
- *                 type: string
- *                 description: Updated location
- *                 example: "New Office Location"
- *     responses:
- *       200:
- *         description: Profile updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/ApiResponse'
- *                 - type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
- *                     message:
- *                       type: string
- *                       example: "Profile updated successfully"
- *       400:
- *         description: Invalid request data or validation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       409:
- *         description: Conflict - Username or email already exists
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.put("/self/profile", UserController.updateSelfProfile);
-
-/**
- * @swagger
- * /api/users/self/password:
- *   put:
- *     summary: Update self password
- *     description: Update authenticated user's own password with current password verification
- *     tags: [User Management]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [currentPassword, newPassword]
- *             properties:
- *               currentPassword:
- *                 type: string
- *                 description: Current password for verification
- *                 example: "oldPassword123!"
- *               newPassword:
- *                 type: string
- *                 description: New password (must meet strength requirements)
- *                 example: "NewSecurePass123!"
- *     responses:
- *       200:
- *         description: Password updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/ApiResponse'
- *                 - type: object
- *                   properties:
- *                     message:
- *                       type: string
- *                       example: "Password updated successfully"
- *       400:
- *         description: Invalid request data, password validation failed, or current password incorrect
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.put("/self/password", UserController.updateSelfPassword);
 
 /**
  * @swagger

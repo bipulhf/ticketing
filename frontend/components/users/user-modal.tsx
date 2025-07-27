@@ -4,6 +4,7 @@ import type React from "react";
 import { useEffect } from "react";
 
 import { useState } from "react";
+import { getAvailableLocations } from "@/actions/users.action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -317,6 +318,12 @@ function UserFormModal({
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [availableLocations, setAvailableLocations] = useState<{
+    locations: Location[];
+    userLocation: Location | null;
+    canSelectMultiple: boolean;
+  } | null>(null);
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
   const open = controlledOpen ?? isOpen;
   const onOpenChange = controlledOnOpenChange ?? setIsOpen;
@@ -348,6 +355,25 @@ function UserFormModal({
 
   const selectedRole = form.watch("role");
 
+  // Fetch available locations when modal opens
+  useEffect(() => {
+    if (open && !availableLocations && !loadingLocations) {
+      setLoadingLocations(true);
+      getAvailableLocations()
+        .then((result) => {
+          if (!result.error) {
+            setAvailableLocations(result.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching available locations:", error);
+        })
+        .finally(() => {
+          setLoadingLocations(false);
+        });
+    }
+  }, [open]);
+
   const handleSubmit = async (data: UserFormValues) => {
     setIsSubmitting(true);
     try {
@@ -376,9 +402,7 @@ function UserFormModal({
   const showExpiryDate = selectedRole === "super_admin";
   const showDepartment = ["super_admin"].includes(selectedRole);
   const showMultipleLocations = selectedRole === "super_admin";
-  const showSingleLocation = ["admin", "it_person", "user"].includes(
-    selectedRole
-  );
+  const showSingleLocation = ["admin"].includes(selectedRole); // Only admin needs location selection
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -570,44 +594,56 @@ function UserFormModal({
                 render={() => (
                   <FormItem>
                     <FormLabel>Locations</FormLabel>
-                    <div className="grid grid-cols-2 gap-2">
-                      {Object.entries(LOCATIONS).map(([key, value]) => (
-                        <FormField
-                          key={value}
-                          control={form.control}
-                          name="locations"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={value}
-                                className="flex flex-row items-start space-x-3 space-y-0"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(value)}
-                                    onCheckedChange={(checked: boolean) => {
-                                      return checked
-                                        ? field.onChange([
-                                            ...(field.value || []),
-                                            value,
-                                          ])
-                                        : field.onChange(
-                                            (field.value || []).filter(
-                                              (location) => location !== value
-                                            )
-                                          );
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-sm font-normal">
-                                  {getLocationDisplayName(value)}
-                                </FormLabel>
-                              </FormItem>
-                            );
-                          }}
-                        />
-                      ))}
-                    </div>
+                    {loadingLocations ? (
+                      <div className="flex items-center justify-center p-4">
+                        <div className="text-sm text-muted-foreground">
+                          Loading available locations...
+                        </div>
+                      </div>
+                    ) : availableLocations ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        {availableLocations.locations.map((location) => (
+                          <FormField
+                            key={location}
+                            control={form.control}
+                            name="locations"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={location}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(location)}
+                                      onCheckedChange={(checked: boolean) => {
+                                        return checked
+                                          ? field.onChange([
+                                              ...(field.value || []),
+                                              location,
+                                            ])
+                                          : field.onChange(
+                                              (field.value || []).filter(
+                                                (loc) => loc !== location
+                                              )
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="text-sm font-normal">
+                                    {getLocationDisplayName(location)}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        No locations available
+                      </div>
+                    )}
                     <FormDescription>
                       Select multiple locations for Super Admin
                     </FormDescription>
@@ -617,7 +653,7 @@ function UserFormModal({
               />
             )}
 
-            {/* Single Location (Admin, IT Person, User) */}
+            {/* Single Location (Admin only) */}
             {userType === "super_admin" && showSingleLocation && (
               <FormField
                 control={form.control}
@@ -625,23 +661,35 @@ function UserFormModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Location</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select location" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.entries(LOCATIONS).map(([key, value]) => (
-                          <SelectItem key={value} value={value}>
-                            {getLocationDisplayName(value)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {loadingLocations ? (
+                      <div className="flex items-center justify-center p-4">
+                        <div className="text-sm text-muted-foreground">
+                          Loading available locations...
+                        </div>
+                      </div>
+                    ) : availableLocations ? (
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select location" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availableLocations.locations.map((location) => (
+                            <SelectItem key={location} value={location}>
+                              {getLocationDisplayName(location)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        No locations available
+                      </div>
+                    )}
                     <FormDescription>
                       Location will be inherited from creator
                     </FormDescription>
@@ -649,6 +697,31 @@ function UserFormModal({
                   </FormItem>
                 )}
               />
+            )}
+
+            {/* Location Inheritance Note for IT Person and User */}
+            {selectedRole === "it_person" && (
+              <div className="rounded-lg border p-4 bg-blue-50">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-blue-600" />
+                  <div className="text-sm text-blue-800">
+                    <strong>Location:</strong> Will be automatically inherited
+                    from your assigned location
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedRole === "user" && (
+              <div className="rounded-lg border p-4 bg-blue-50">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-blue-600" />
+                  <div className="text-sm text-blue-800">
+                    <strong>Location:</strong> Will be automatically inherited
+                    from your IT Person's location
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Active Status */}
