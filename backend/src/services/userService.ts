@@ -6,6 +6,7 @@ import {
   HTTP_STATUS,
   ERROR_MESSAGES,
   ACCOUNT_LIMITS,
+  PASSWORD_CONFIG,
 } from "../utils/constants";
 import { canCreateAccount, canManageUser } from "../middlewares/roleMiddleware";
 import {
@@ -655,5 +656,80 @@ export class UserService {
     });
 
     return updatedUser;
+  }
+
+  static async resetUserPassword(
+    targetUserId: string,
+    resetterId: string
+  ): Promise<Omit<User, "password">> {
+    // Get the resetter information to validate permissions
+    const resetter = await prisma.user.findUnique({
+      where: { id: resetterId },
+      select: {
+        id: true,
+        role: true,
+        isActive: true,
+        expiryDate: true,
+      },
+    });
+
+    if (!resetter) {
+      throw createError("Resetter not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Check if resetter account is active
+    if (!resetter.isActive) {
+      throw createError("Resetter account is inactive", HTTP_STATUS.FORBIDDEN);
+    }
+
+    // Check if resetter account has expired (for super_admin)
+    if (
+      resetter.role === "super_admin" &&
+      resetter.expiryDate &&
+      new Date() > resetter.expiryDate
+    ) {
+      throw createError("Resetter account has expired", HTTP_STATUS.FORBIDDEN);
+    }
+
+    // Get the target user information
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        isActive: true,
+      },
+    });
+
+    if (!targetUser) {
+      throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Validate hierarchy permissions - resetter can only reset password for one level below
+    const canReset = canManageUser(resetter.role, targetUser.role);
+    if (!canReset) {
+      throw createError(
+        ERROR_MESSAGES.CANNOT_RESET_PASSWORD,
+        HTTP_STATUS.FORBIDDEN
+      );
+    }
+
+    // Hash the default password
+    const hashedPassword = await hashPassword(PASSWORD_CONFIG.DEFAULT_PASSWORD);
+
+    // Update the user's password
+    const updatedUser = await prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        password: hashedPassword,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Return user without password field
+    const { password, ...userWithoutPassword } = updatedUser;
+    return userWithoutPassword;
   }
 }

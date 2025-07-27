@@ -410,4 +410,34 @@ export class UserController {
       return;
     }
   );
+
+  static resetUserPassword = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const { userId } = req.params;
+      const resetterId = req.user?.id;
+
+      if (!resetterId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not authenticated" },
+        });
+      }
+
+      if (!userId) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          error: { message: "User ID is required" },
+        });
+      }
+
+      const user = await UserService.resetUserPassword(userId, resetterId);
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        user,
+        message: "Password reset successfully to default password",
+      });
+      return;
+    }
+  );
 }

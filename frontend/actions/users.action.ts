@@ -219,3 +219,20 @@ export const updateSelfPassword = async (passwordData: {
   }
   return { error: response.error.message };
 };
+
+export const resetUserPassword = async (userId: string) => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const response = await fetchJson(`users/${userId}/reset-password`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.success) {
+    return response.data;
+  }
+  return { error: response.error.message };
+};

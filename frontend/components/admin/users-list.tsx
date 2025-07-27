@@ -56,6 +56,7 @@ import {
   CreditCard,
   LayoutGrid,
   List,
+  KeyRound,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -67,6 +68,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  resetUserPassword,
 } from "@/actions/users.action";
 import {
   UserInfoModal,
@@ -235,6 +237,35 @@ export function AdminUsersList() {
   const handleEditUser = async (user: User) => {
     setSelectedUser(user);
     setShowEditModal(true);
+  };
+
+  const handleResetPassword = async (
+    userId: string,
+    username: string
+  ): Promise<void> => {
+    if (
+      !confirm(
+        `Are you sure you want to reset ${username}'s password to the default password?`
+      )
+    )
+      return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await resetUserPassword(userId);
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(
+          `Password reset successfully for ${username}. New password: defaultPassword123!`
+        );
+      }
+    } catch (err) {
+      toast.error("Failed to reset password");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getRoleBadgeVariant = (role: UserRole) => {
@@ -693,6 +724,14 @@ export function AdminUsersList() {
                               >
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit User
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleResetPassword(user.id, user.username)
+                                }
+                              >
+                                <KeyRound className="mr-2 h-4 w-4" />
+                                Reset Password
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem

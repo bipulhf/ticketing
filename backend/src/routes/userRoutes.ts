@@ -1015,4 +1015,63 @@ router.put("/self/profile", UserController.updateSelfProfile);
  */
 router.put("/self/password", UserController.updateSelfPassword);
 
+/**
+ * @swagger
+ * /api/users/{userId}/reset-password:
+ *   put:
+ *     summary: Reset user password to default
+ *     description: Reset a user's password to the default password. Only users one level higher in the hierarchy can reset passwords for users one level below them.
+ *     tags: [User Management]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user whose password will be reset
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *                 message:
+ *                   type: string
+ *                   example: "Password reset successfully to default password"
+ *       400:
+ *         description: Invalid request data or user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - Cannot reset password for this user (hierarchy violation)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.put("/:userId/reset-password", UserController.resetUserPassword);
+
 export { router as userRoutes };

@@ -50,6 +50,10 @@ export const JWT_CONFIG = {
   ALGORITHM: "HS256",
 } as const;
 
+export const PASSWORD_CONFIG = {
+  DEFAULT_PASSWORD: "defaultPassword123!",
+} as const;
+
 export const RATE_LIMIT_CONFIG = {
   WINDOW_MS: 15 * 60 * 1000, // 15 minutes
   MAX_REQUESTS: 100,
@@ -82,4 +86,5 @@ export const ERROR_MESSAGES = {
   INTERNAL_ERROR: "Internal server error",
   UNAUTHORIZED_ACTION: "Unauthorized to perform this action",
   NOTES_REQUIRED: "Notes are required when closing a ticket",
+  CANNOT_RESET_PASSWORD: "Cannot reset password for this user",
 } as const;
