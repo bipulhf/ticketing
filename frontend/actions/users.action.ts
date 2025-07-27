@@ -2,6 +2,7 @@
 
 import { fetchJson } from "@/utils/custom-fetch";
 import { cookies } from "next/headers";
+import { ITDepartment, Location, UserRole } from "@/types/types";
 
 export const getUsersForSystemOwner = async ({
   params,
@@ -75,11 +76,13 @@ export const createUser = async (userData: {
   username: string;
   email: string;
   password: string;
-  role: string;
+  role: UserRole;
   businessType?: string;
   accountLimit?: number;
   expiryDate?: string;
-  location?: string;
+  department?: ITDepartment;
+  locations?: Location[];
+  userLocation?: Location;
 }) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -109,12 +112,7 @@ export const createUser = async (userData: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      ...userData,
-      ...(userData.expiryDate && {
-        expiryDate: new Date(userData.expiryDate).toISOString(),
-      }),
-    }),
+    body: JSON.stringify(userData),
   });
 
   if (response.success) {
@@ -131,7 +129,9 @@ export const updateUser = async (
     businessType?: string;
     accountLimit?: number;
     expiryDate?: string;
-    location?: string;
+    department?: ITDepartment;
+    locations?: Location[];
+    userLocation?: Location;
     isActive?: boolean;
   }
 ) => {
@@ -144,12 +144,7 @@ export const updateUser = async (
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      ...userData,
-      ...(userData.expiryDate && {
-        expiryDate: new Date(userData.expiryDate).toISOString(),
-      }),
-    }),
+    body: JSON.stringify(userData),
   });
 
   if (response.success) {
@@ -178,12 +173,12 @@ export const deleteUser = async (userId: string) => {
 export const updateSelfProfile = async (userData: {
   username?: string;
   email?: string;
-  location?: string;
+  userLocation?: Location;
 }) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
-  const response = await fetchJson("users/self/profile", {
+  const response = await fetchJson("users/profile", {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -205,7 +200,7 @@ export const updateSelfPassword = async (passwordData: {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
-  const response = await fetchJson("users/self/password", {
+  const response = await fetchJson("users/password", {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,

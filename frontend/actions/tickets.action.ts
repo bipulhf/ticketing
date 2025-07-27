@@ -2,6 +2,7 @@
 
 import { fetchJson } from "@/utils/custom-fetch";
 import { cookies } from "next/headers";
+import { ITDepartment, Location, UserDepartment } from "@/types/types";
 
 export const getTickets = async ({
   page = 1,
@@ -10,6 +11,9 @@ export const getTickets = async ({
   fromDate,
   toDate,
   search,
+  department,
+  location,
+  user_department,
 }: {
   page?: number;
   limit?: number;
@@ -17,6 +21,9 @@ export const getTickets = async ({
   fromDate?: string;
   toDate?: string;
   search?: string;
+  department?: string;
+  location?: string;
+  user_department?: string;
 } = {}) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -37,6 +44,15 @@ export const getTickets = async ({
   }
   if (search) {
     params.append("search", search);
+  }
+  if (department) {
+    params.append("department", department);
+  }
+  if (location) {
+    params.append("location", location);
+  }
+  if (user_department) {
+    params.append("user_department", user_department);
   }
 
   const response = await fetchJson(`tickets?${params}`, {
@@ -71,9 +87,12 @@ export const getTicketById = async (ticketId: string) => {
 
 export const createTicket = async (ticketData: {
   description: string;
-  ip_address?: string;
-  device_name?: string;
-  ip_number?: string;
+  ip_address: string;
+  device_name: string;
+  ip_number: string;
+  department: ITDepartment;
+  location: Location;
+  user_department?: UserDepartment;
   attachments?: Array<{
     name: string;
     url: string;
@@ -100,9 +119,12 @@ export const createTicket = async (ticketData: {
 
 export const createTicketWithFiles = async (ticketData: {
   description: string;
-  ip_address?: string;
-  device_name?: string;
-  ip_number?: string;
+  ip_address: string;
+  device_name: string;
+  ip_number: string;
+  department: ITDepartment;
+  location: Location;
+  user_department?: UserDepartment;
   uploadedFiles: Array<{
     name: string;
     url: string;
@@ -113,19 +135,19 @@ export const createTicketWithFiles = async (ticketData: {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
-  // Transform uploaded files to attachment format
-  const attachments = ticketData.uploadedFiles.map((file) => ({
-    name: file.name,
-    url: file.url,
-    fileType: file.type.split("/")[1],
-  }));
-
-  const requestData = {
+  const ticketPayload = {
     description: ticketData.description,
     ip_address: ticketData.ip_address,
     device_name: ticketData.device_name,
     ip_number: ticketData.ip_number,
-    attachments,
+    department: ticketData.department,
+    location: ticketData.location,
+    user_department: ticketData.user_department,
+    attachments: ticketData.uploadedFiles.map((file) => ({
+      name: file.name,
+      url: file.url,
+      fileType: file.type,
+    })),
   };
 
   const response = await fetchJson("tickets", {
@@ -134,7 +156,7 @@ export const createTicketWithFiles = async (ticketData: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(requestData),
+    body: JSON.stringify(ticketPayload),
   });
 
   if (response.success) {
@@ -149,6 +171,12 @@ export const updateTicket = async (
     description?: string;
     status?: string;
     notes?: string;
+    ip_address?: string;
+    device_name?: string;
+    ip_number?: string;
+    department?: ITDepartment;
+    location?: Location;
+    user_department?: UserDepartment;
   }
 ) => {
   const cookieStore = await cookies();
@@ -191,7 +219,7 @@ export const closeTicket = async (ticketId: string, notes: string) => {
   const token = cookieStore.get("token")?.value;
 
   const response = await fetchJson(`tickets/${ticketId}/close`, {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
@@ -210,7 +238,7 @@ export const reopenTicket = async (ticketId: string) => {
   const token = cookieStore.get("token")?.value;
 
   const response = await fetchJson(`tickets/${ticketId}/reopen`, {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
     },

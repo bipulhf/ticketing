@@ -60,7 +60,13 @@ import {
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 import { cn } from "@/lib/utils";
-import { BusinessType, User, UserRole, UsersResponse } from "@/types/types";
+import {
+  BusinessType,
+  User,
+  UserRole,
+  UsersResponse,
+  UserFormValues,
+} from "@/types/types";
 import {
   getUsersForSystemOwner,
   getAllUsersByType,
@@ -70,11 +76,7 @@ import {
   deleteUser,
   resetUserPassword,
 } from "@/actions/users.action";
-import {
-  UserInfoModal,
-  UserFormModal,
-  UserFormValues,
-} from "@/components/users/user-modal";
+import { UserInfoModal, UserFormModal } from "@/components/users/user-modal";
 import { toast } from "sonner";
 
 interface Filters {
@@ -153,8 +155,15 @@ export function ItPersonUsersList() {
   ): Promise<boolean> => {
     setIsSubmitting(true);
     try {
+      // Validate that role is not empty
+      if (!formData.role) {
+        toast.error("Role is required");
+        return false;
+      }
+
       const userData = {
         ...formData,
+        role: formData.role as UserRole, // Type assertion since we've validated it's not empty
         password: "defaultPassword123!", // You might want to generate a random password or ask for it
       };
 
@@ -671,12 +680,31 @@ export function ItPersonUsersList() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {user.location ? (
+                          {user.userLocation ? (
                             <div className="flex items-center gap-2">
                               <MapPin className="h-4 w-4 text-gray-400" />
                               <span className="text-sm text-gray-600">
-                                {user.location}
+                                {user.userLocation.charAt(0).toUpperCase() +
+                                  user.userLocation.slice(1).toLowerCase()}
                               </span>
+                            </div>
+                          ) : user.locations && user.locations.length > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              <div className="flex flex-wrap gap-1">
+                                {user.locations.map(
+                                  (location: string, index: number) => (
+                                    <Badge
+                                      key={location}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {location.charAt(0).toUpperCase() +
+                                        location.slice(1).toLowerCase()}
+                                    </Badge>
+                                  )
+                                )}
+                              </div>
                             </div>
                           ) : (
                             <span className="text-gray-400 text-sm">

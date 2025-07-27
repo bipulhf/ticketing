@@ -166,10 +166,12 @@ export function TicketCard({
 
           {/* User Details */}
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-            {ticket.createdBy.location && (
+            {ticket.createdBy.userLocation && (
               <div className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                <span className="truncate">{ticket.createdBy.location}</span>
+                <span className="truncate">
+                  {ticket.createdBy.userLocation}
+                </span>
               </div>
             )}
             {ticket.createdBy.businessType && (
@@ -177,6 +179,64 @@ export function TicketCard({
                 <Building className="h-3 w-3" />
                 <span className="truncate">
                   {formatBusinessType(ticket.createdBy.businessType)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Ticket Information */}
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            {ticket.ip_address && (
+              <div className="flex items-center gap-1">
+                <span className="font-medium">IP Address:</span>
+                <span className="text-muted-foreground">
+                  {ticket.ip_address}
+                </span>
+              </div>
+            )}
+            {ticket.device_name && (
+              <div className="flex items-center gap-1">
+                <span className="font-medium">Device:</span>
+                <span className="text-muted-foreground">
+                  {ticket.device_name}
+                </span>
+              </div>
+            )}
+            {ticket.ip_number && (
+              <div className="flex items-center gap-1">
+                <span className="font-medium">IP Number:</span>
+                <span className="text-muted-foreground">
+                  {ticket.ip_number}
+                </span>
+              </div>
+            )}
+            {ticket.department && (
+              <div className="flex items-center gap-1">
+                <span className="font-medium">Department:</span>
+                <span className="text-muted-foreground">
+                  {ticket.department.replace(/_/g, " ").toUpperCase()}
+                </span>
+              </div>
+            )}
+            {ticket.location && (
+              <div className="flex items-center gap-1">
+                <span className="font-medium">Location:</span>
+                <span className="text-muted-foreground">
+                  {ticket.location.charAt(0).toUpperCase() +
+                    ticket.location.slice(1).toLowerCase()}
+                </span>
+              </div>
+            )}
+            {ticket.user_department && (
+              <div className="flex items-center gap-1">
+                <span className="font-medium">User Dept:</span>
+                <span className="text-muted-foreground">
+                  {ticket.user_department.charAt(0).toUpperCase() +
+                    ticket.user_department.slice(1).toLowerCase()}
                 </span>
               </div>
             )}

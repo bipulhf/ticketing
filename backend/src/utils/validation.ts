@@ -141,17 +141,19 @@ export function validateUserCreationData(
       errors.push("Invalid locations");
     }
   } else if (["admin", "it_person"].includes(data.role)) {
-    if (!data.userLocation) {
-      errors.push("Single location is required for Admin/IT Person");
-    } else if (!isValidLocation(data.userLocation)) {
-      errors.push("Invalid location");
+    // For IT persons, location will be automatically inherited from admin
+    // For admins, location validation is still required
+    if (data.role === "admin") {
+      if (!data.userLocation) {
+        errors.push("Single location is required for Admin");
+      } else if (!isValidLocation(data.userLocation)) {
+        errors.push("Invalid location");
+      }
     }
+    // IT persons don't need location validation as it's automatically inherited
   } else if (data.role === "user") {
-    if (!data.userLocation) {
-      errors.push("Location is required for normal users");
-    } else if (!isValidLocation(data.userLocation)) {
-      errors.push("Invalid location");
-    }
+    // Users don't need location validation as it's automatically inherited from IT Person
+    // Location will be set automatically during inheritance
   }
 
   return {

@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { getTickets } from "@/actions/tickets.action";
 import TicketsPage from "./tickets-page";
-import { TicketsListResponse, UserRole } from "@/types/types";
+import {
+  TicketsListResponse,
+  UserRole,
+  ITDepartment,
+  Location,
+} from "@/types/types";
 
 interface TicketsPageWrapperProps {
   userRole: UserRole;
@@ -19,6 +24,35 @@ export default function TicketsPageWrapper({
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<{
+    department?: ITDepartment;
+    userLocation?: Location;
+  } | null>(null);
+
+  // Get user information from cookies
+  useEffect(() => {
+    const getUserInfo = () => {
+      try {
+        const userCookie = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("user="));
+
+        if (userCookie) {
+          const userData = JSON.parse(
+            decodeURIComponent(userCookie.split("=")[1])
+          );
+          setUserInfo({
+            department: userData.department,
+            userLocation: userData.userLocation,
+          });
+        }
+      } catch (error) {
+        console.error("Error parsing user cookie:", error);
+      }
+    };
+
+    getUserInfo();
+  }, []);
 
   // Get search params
   const page = searchParams.get("page");
@@ -95,6 +129,8 @@ export default function TicketsPageWrapper({
         }
       }
       userType={userRole}
+      userDepartment={userInfo?.department}
+      userLocation={userInfo?.userLocation}
       isLoading={loading}
       error={error}
     />

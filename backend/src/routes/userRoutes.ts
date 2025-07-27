@@ -182,7 +182,7 @@ router.post(
  * /api/users/create-it-person:
  *   post:
  *     summary: Create IT Person account
- *     description: Create a new IT Person account. Admins and higher roles can create IT Person accounts.
+ *     description: Create a new IT Person account. Admins and higher roles can create IT Person accounts. Location is automatically inherited from the creator (admin).
  *     tags: [User Management]
  *     security:
  *       - bearerAuth: []
@@ -209,7 +209,7 @@ router.post(
  *                 example: "SecurePass123!"
  *               location:
  *                 type: string
- *                 description: IT Person location/department
+ *                 description: IT Person location (optional - automatically inherited from creator)
  *                 example: "Help Desk - Floor 2"
  *     responses:
  *       201:
@@ -259,7 +259,7 @@ router.post(
  * /api/users/create-user:
  *   post:
  *     summary: Create User account
- *     description: Create a new User account. IT Persons and higher roles can create User accounts.
+ *     description: Create a new User account. IT Persons and higher roles can create User accounts. Location is automatically inherited from the creator (IT Person).
  *     tags: [User Management]
  *     security:
  *       - bearerAuth: []
@@ -286,7 +286,7 @@ router.post(
  *                 example: "SecurePass123!"
  *               location:
  *                 type: string
- *                 description: User location/department
+ *                 description: User location (optional - automatically inherited from creator)
  *                 example: "Marketing Department"
  *     responses:
  *       201:

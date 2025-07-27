@@ -24,6 +24,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { createTicketWithFiles } from "@/actions/tickets.action";
 import { toast } from "sonner";
@@ -37,8 +44,18 @@ import {
   HardDrive,
   Wifi,
   Monitor,
+  Building,
+  MapPin,
 } from "lucide-react";
 import { useUploadThing } from "@/lib/utils";
+import {
+  ITDepartment,
+  Location,
+  UserDepartment,
+  IT_DEPARTMENTS,
+  USER_DEPARTMENTS,
+  LOCATIONS,
+} from "@/types/types";
 
 // Form validation schema
 const createTicketSchema = z.object({
@@ -48,26 +65,46 @@ const createTicketSchema = z.object({
     .max(1000, "Description must not exceed 1000 characters"),
   ip_address: z
     .string()
-    .optional()
+    .min(1, "IP address is required")
     .refine((val) => {
-      if (!val || val.trim() === "") return true;
       const ipRegex =
         /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
       return ipRegex.test(val);
-    }, "Please enter a valid IP address"),
+    }, "Please enter a valid IPv4 address"),
   device_name: z
     .string()
-    .max(100, "Device name must not exceed 100 characters")
-    .optional(),
+    .min(1, "Device name is required")
+    .max(100, "Device name must not exceed 100 characters"),
   ip_number: z
     .string()
-    .optional()
+    .min(1, "IP number is required")
     .refine((val) => {
-      if (!val || val.trim() === "") return true;
       const ipRegex =
         /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
       return ipRegex.test(val);
-    }, "Please enter a valid IP address"),
+    }, "Please enter a valid IPv4 address"),
+  department: z.enum(["it_operations", "it_qcs"], {
+    required_error: "Department is required",
+  }),
+  location: z.enum(["tongi", "salna", "mirpur", "mawna", "rupganj"], {
+    required_error: "Location is required",
+  }),
+  user_department: z
+    .enum([
+      "qa",
+      "qc",
+      "production",
+      "microbiology",
+      "hse",
+      "engineering",
+      "marketing",
+      "accounts",
+      "validation",
+      "ppic",
+      "warehouse",
+      "development",
+    ])
+    .optional(),
 });
 
 type CreateTicketForm = z.infer<typeof createTicketSchema>;
@@ -76,6 +113,9 @@ interface CreateTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  userRole?: string;
+  userDepartment?: ITDepartment;
+  userLocation?: Location;
 }
 
 interface UploadedFile {
@@ -89,6 +129,9 @@ export function CreateTicketModal({
   isOpen,
   onClose,
   onSuccess,
+  userRole,
+  userDepartment,
+  userLocation,
 }: CreateTicketModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -99,21 +142,18 @@ export function CreateTicketModal({
       if (res) {
         const newFiles = res.map((file) => ({
           name: file.name,
-          url: file.ufsUrl,
+          url: file.url,
           size: file.size,
           type: file.type,
         }));
         setUploadedFiles((prev) => [...prev, ...newFiles]);
-        toast.success(`${res.length} file(s) uploaded successfully`);
+        setIsUploading(false);
+        toast.success("Files uploaded successfully!");
       }
-      setIsUploading(false);
     },
     onUploadError: (error: Error) => {
-      toast.error(`Upload failed: ${error.message}`);
       setIsUploading(false);
-    },
-    onUploadBegin: () => {
-      setIsUploading(true);
+      toast.error(`Upload failed: ${error.message}`);
     },
   });
 
@@ -124,13 +164,15 @@ export function CreateTicketModal({
       ip_address: "",
       device_name: "",
       ip_number: "",
+      department: userDepartment || "it_operations",
+      location: userLocation || "tongi",
+      user_department: undefined,
     },
   });
 
   const handleFileSelect = async (files: File[]) => {
-    if (files.length > 0) {
-      await startUpload(files);
-    }
+    setIsUploading(true);
+    await startUpload(files);
   };
 
   const removeFile = (index: number) => {
@@ -139,7 +181,7 @@ export function CreateTicketModal({
 
   const getFileIcon = (type: string) => {
     if (type.startsWith("image/")) return <Image className="h-4 w-4" />;
-    if (type === "application/pdf") return <FileText className="h-4 w-4" />;
+    if (type.includes("pdf")) return <FileText className="h-4 w-4" />;
     return <File className="h-4 w-4" />;
   };
 
@@ -153,37 +195,46 @@ export function CreateTicketModal({
 
   const onSubmit = async (data: CreateTicketForm) => {
     setIsSubmitting(true);
-
     try {
       const result = await createTicketWithFiles({
         description: data.description,
-        ip_address: data.ip_address || undefined,
-        device_name: data.device_name || undefined,
-        ip_number: data.ip_number || undefined,
+        ip_address: data.ip_address,
+        device_name: data.device_name,
+        ip_number: data.ip_number,
+        department: data.department,
+        location: data.location,
+        user_department: data.user_department,
         uploadedFiles,
       });
 
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Ticket created successfully");
+        toast.success("Ticket created successfully!");
         form.reset();
         setUploadedFiles([]);
-        onClose();
         onSuccess?.();
+        onClose();
       }
     } catch (error) {
       toast.error("Failed to create ticket");
+      console.error("Error creating ticket:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    form.reset();
-    setUploadedFiles([]);
-    onClose();
+    if (!isSubmitting) {
+      form.reset();
+      setUploadedFiles([]);
+      onClose();
+    }
   };
+
+  // Determine which fields to show based on user role
+  const showUserDepartment = userRole === "user";
+  const isITPerson = userRole === "it_person";
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -191,103 +242,48 @@ export function CreateTicketModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <HardDrive className="h-5 w-5" />
-            Create Support Ticket
+            Create New Ticket
           </DialogTitle>
           <DialogDescription>
-            Describe your issue in detail and include any relevant device
-            information. You can also attach files to help us understand the
-            problem better.
+            Fill in the details to create a new support ticket
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Description Field */}
+            {/* Description */}
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    Problem Description *
-                  </FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Please describe your issue in detail. Include what you were trying to do, what happened, and any error messages you received..."
-                      className="min-h-[120px] resize-none"
+                      placeholder="Describe the issue in detail..."
+                      className="min-h-[100px]"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Provide as much detail as possible to help us resolve your
-                    issue quickly.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Device Information Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-base font-medium">
-                <Monitor className="h-4 w-4" />
-                Device Information (Optional)
-              </div>
-              <p className="text-sm text-muted-foreground">
-                This information helps our IT team provide better support.
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="device_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Monitor className="h-3 w-3" />
-                        Device Name
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., LAPTOP-ABC123, John-Desktop"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="ip_address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Wifi className="h-3 w-3" />
-                        IP Address
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 192.168.1.100" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
+            {/* Device Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="ip_number"
+                name="device_name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <Wifi className="h-3 w-3" />
-                      Alternative IP Number
+                      <Monitor className="h-4 w-4" />
+                      Device Name
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g., 10.0.0.15 (if different from above)"
+                        placeholder="e.g., PC-001, Laptop-Admin"
                         {...field}
                       />
                     </FormControl>
@@ -295,79 +291,208 @@ export function CreateTicketModal({
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="ip_address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Wifi className="h-4 w-4" />
+                      IP Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 192.168.1.100" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            {/* File Upload Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-base font-medium">
-                <Upload className="h-4 w-4" />
-                Attachments (Optional)
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Upload screenshots, error logs, or other relevant files. Max
-                16MB per file, up to 10 files.
-              </p>
+            {/* IP Number */}
+            <FormField
+              control={form.control}
+              name="ip_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Wifi className="h-4 w-4" />
+                    IP Number
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 192.168.1.100" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              {/* File Upload Area */}
-              <div className="relative border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                <div className="flex flex-col items-center justify-center space-y-2">
-                  <Upload className="h-8 w-8 text-muted-foreground" />
-                  <div className="text-center">
-                    <p className="text-sm font-medium">Upload files</p>
-                    <p className="text-xs text-muted-foreground">
-                      Click to select files or drag and drop
-                    </p>
-                  </div>
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf,.txt,.doc,.docx"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length > 0) {
-                      handleFileSelect(files);
-                    }
-                  }}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  disabled={isUploading}
-                />
-
-                {isUploading && (
-                  <div className="mt-4 flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm">Uploading files...</span>
-                  </div>
+            {/* Department and Location */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Building className="h-4 w-4" />
+                      Department
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="it_operations">
+                          IT Operations
+                        </SelectItem>
+                        <SelectItem value="it_qcs">IT QCS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      {isITPerson
+                        ? "Your assigned department"
+                        : "Select the appropriate department"}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Location
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select location" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(LOCATIONS).map(([key, value]) => (
+                          <SelectItem key={value} value={value}>
+                            {value.charAt(0).toUpperCase() +
+                              value.slice(1).toLowerCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      {userLocation
+                        ? "Your assigned location"
+                        : "Select the location"}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* User Department (for normal users only) */}
+            {showUserDepartment && (
+              <FormField
+                control={form.control}
+                name="user_department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Building className="h-4 w-4" />
+                      Your Department
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your department" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(USER_DEPARTMENTS).map(
+                          ([key, value]) => (
+                            <SelectItem key={value} value={value}>
+                              {key.charAt(0).toUpperCase() +
+                                key.slice(1).toLowerCase()}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Your department for display and filtering purposes
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* File Upload */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Attachments</label>
+                <div className="mt-2">
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length > 0) {
+                        handleFileSelect(files);
+                      }
+                    }}
+                    className="hidden"
+                    id="file-upload"
+                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip,.rar"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
+                  >
+                    <Upload className="h-4 w-4" />
+                    {isUploading ? "Uploading..." : "Upload Files"}
+                  </label>
+                </div>
               </div>
 
-              {/* Uploaded Files List */}
+              {/* Uploaded Files */}
               {uploadedFiles.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Uploaded Files:</p>
+                  <label className="text-sm font-medium">Uploaded Files</label>
                   <div className="space-y-2">
                     {uploadedFiles.map((file, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-2 bg-muted rounded-md"
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
                       >
                         <div className="flex items-center gap-2">
                           {getFileIcon(file.type)}
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">
-                              {file.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {formatFileSize(file.size)}
-                            </span>
-                          </div>
+                          <span className="text-sm font-medium">
+                            {file.name}
+                          </span>
+                          <Badge variant="secondary" className="text-xs">
+                            {formatFileSize(file.size)}
+                          </Badge>
                         </div>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFile(index)}
-                          disabled={isUploading}
+                          disabled={isSubmitting}
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -383,15 +508,11 @@ export function CreateTicketModal({
                 type="button"
                 variant="outline"
                 onClick={handleClose}
-                disabled={isSubmitting || isUploading}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || isUploading}
-                className="min-w-[120px]"
-              >
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

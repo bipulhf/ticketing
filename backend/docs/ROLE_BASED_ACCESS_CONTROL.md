@@ -31,14 +31,14 @@ This document describes the implementation of the role-based access control syst
 
 - **Can Create**: User
 - **Department**: Inherits department from Admin
-- **Location**: Inherits single location from Admin
+- **Location**: **AUTOMATICALLY** inherits single location from Admin (overrides any frontend selection)
 - **Access**: Can view tickets from assigned location and department
 
 ### Normal User
 
 - **Can Create**: None
 - **Department**: Selectable at ticket creation (for display/filtering only)
-- **Location**: Inherits location from IT Person
+- **Location**: **AUTOMATICALLY** inherits location from IT Person (overrides any frontend selection)
 - **Access**: Can only view their own tickets
 
 ## Departments
@@ -72,6 +72,26 @@ All roles can be assigned to these locations:
 - `mirpur` - Mirpur
 - `mawna` - Mawna
 - `rupganj` - Rupganj
+
+## Automatic Location Inheritance
+
+### For IT Persons
+
+- **Automatic Inheritance**: IT Persons automatically inherit the location from their creator (Admin)
+- **Frontend Override**: Any location selection made in the frontend will be ignored
+- **API Behavior**: The `location` field in the create IT Person API is optional and will be overridden
+
+### For Normal Users
+
+- **Automatic Inheritance**: Normal Users automatically inherit the location from their creator (IT Person)
+- **Frontend Override**: Any location selection made in the frontend will be ignored
+- **API Behavior**: The `location` field in the create User API is optional and will be overridden
+
+### Benefits
+
+- Ensures consistent location assignment within the hierarchy
+- Prevents location mismatches between creators and their subordinates
+- Simplifies user management by removing manual location selection for these roles
 
 ## Ticket Requirements
 
@@ -288,7 +308,7 @@ Common error messages and their meanings:
 - `IP_NUMBER_REQUIRED`: IP number is required
 - `IP_ADDRESS_REQUIRED`: IP address is required
 - `MULTIPLE_LOCATIONS_REQUIRED`: Multiple locations are required for Super Admin
-- `SINGLE_LOCATION_REQUIRED`: Only one location can be assigned to Admin/IT Person
+- `SINGLE_LOCATION_REQUIRED`: Only one location can be assigned to Admin (IT Person location is automatically inherited)
 
 ## Testing
 

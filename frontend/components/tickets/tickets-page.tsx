@@ -40,6 +40,8 @@ import type {
   PaginationInfo,
   Ticket as TicketType,
   UserRole,
+  ITDepartment,
+  Location,
 } from "@/types/types";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -48,12 +50,16 @@ export default function TicketPage({
   data,
   pagination,
   userType,
+  userDepartment,
+  userLocation,
   isLoading = false,
   error = null,
 }: {
   data: TicketType[];
   pagination: PaginationInfo;
   userType: UserRole;
+  userDepartment?: ITDepartment;
+  userLocation?: Location;
   isLoading?: boolean;
   error?: string | null;
 }) {
@@ -449,6 +455,9 @@ export default function TicketPage({
           window.location.reload();
         }}
         onSuccess={handleTicketCreated}
+        userRole={userType}
+        userDepartment={userDepartment}
+        userLocation={userLocation}
       />
     </div>
   );

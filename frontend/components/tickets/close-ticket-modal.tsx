@@ -162,11 +162,12 @@ export function CloseTicketModal({
 
               {/* User Details */}
               <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                {ticket.createdBy.location && (
+                {ticket.createdBy.userLocation && (
                   <div className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
                     <span className="truncate">
-                      {ticket.createdBy.location}
+                      {ticket.createdBy.userLocation.charAt(0).toUpperCase() +
+                        ticket.createdBy.userLocation.slice(1).toLowerCase()}
                     </span>
                   </div>
                 )}

@@ -74,12 +74,12 @@ export const ROLE_HIERARCHY = {
   IT_PERSON: {
     canCreate: ["user"],
     departmentInheritance: true, // Inherits department from Admin
-    locationInheritance: true, // Inherits single location from Admin
+    locationInheritance: true, // FORCED: Inherits single location from Admin (overrides frontend selection)
   },
   USER: {
     canCreate: [],
     departmentInheritance: false, // Users select department at ticket creation
-    locationInheritance: true, // Inherits location from IT Person
+    locationInheritance: true, // FORCED: Inherits location from IT Person (overrides frontend selection)
   },
 } as const;
 
@@ -201,5 +201,5 @@ export const ERROR_MESSAGES = {
   MULTIPLE_LOCATIONS_REQUIRED:
     "Multiple locations are required for Super Admin",
   SINGLE_LOCATION_REQUIRED:
-    "Only one location can be assigned to Admin/IT Person",
+    "Only one location can be assigned to Admin (IT Person location is automatically inherited)",
 } as const;

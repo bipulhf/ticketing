@@ -5,11 +5,34 @@ export type UserRole =
   | "admin"
   | "it_person"
   | "user";
+
 export type BusinessType =
   | "small_business"
   | "medium_business"
   | "large_business";
+
 export type TicketStatus = "pending" | "solved";
+
+// IT Departments for Admin & IT Person
+export type ITDepartment = "it_operations" | "it_qcs";
+
+// User Departments for display/filtering (Normal Users)
+export type UserDepartment =
+  | "qa"
+  | "qc"
+  | "production"
+  | "microbiology"
+  | "hse"
+  | "engineering"
+  | "marketing"
+  | "accounts"
+  | "validation"
+  | "ppic"
+  | "warehouse"
+  | "development";
+
+// Locations for all roles
+export type Location = "tongi" | "salna" | "mirpur" | "mawna" | "rupganj";
 
 // Core Models
 export interface User {
@@ -21,7 +44,9 @@ export interface User {
   businessType?: BusinessType;
   accountLimit?: number;
   expiryDate?: string; // ISO date-time string
-  location?: string;
+  department?: ITDepartment; // For super_admin, admin, it_person
+  locations?: Location[]; // Multiple locations for super_admin
+  userLocation?: Location; // Single location for admin, it_person, user
   createdAt: string;
   updatedAt: string;
   createdBy?: User;
@@ -41,9 +66,12 @@ export interface Ticket {
   description: string;
   status: TicketStatus;
   notes?: string;
-  ip_address?: string;
-  device_name?: string;
-  ip_number?: string;
+  ip_address: string; // Required: Valid IPv4 format
+  device_name: string; // Required: Device name
+  ip_number: string; // Required: IP number field
+  department: ITDepartment; // Required: IT Operations or IT QCS
+  location: Location; // Required: Location for filtering
+  user_department?: UserDepartment; // Optional: User's department for display/filtering
   createdById: string;
   createdBy: User;
   attachments: Attachment[];
@@ -65,7 +93,9 @@ export interface RegisterRequest {
   businessType?: BusinessType;
   accountLimit?: number;
   expiryDate?: string;
-  location?: string;
+  department?: ITDepartment;
+  locations?: Location[];
+  userLocation?: Location;
 }
 
 export interface TicketAttachmentInput {
@@ -76,9 +106,12 @@ export interface TicketAttachmentInput {
 
 export interface CreateTicketRequest {
   description: string;
-  ip_address?: string;
-  device_name?: string;
-  ip_number?: string;
+  ip_address: string; // Required
+  device_name: string; // Required
+  ip_number: string; // Required
+  department: ITDepartment; // Required
+  location: Location; // Required
+  user_department?: UserDepartment; // Optional
   attachments?: File[];
 }
 
@@ -89,6 +122,9 @@ export interface UpdateTicketRequest {
   ip_address?: string;
   device_name?: string;
   ip_number?: string;
+  department?: ITDepartment;
+  location?: Location;
+  user_department?: UserDepartment;
   attachments?: TicketAttachmentInput[];
 }
 
@@ -212,3 +248,56 @@ export interface SuccessResponse<T> {
   success: true;
   data: T;
 }
+
+// Utility types for form handling
+export interface DepartmentOption {
+  label: string;
+  value: ITDepartment | UserDepartment;
+}
+
+export interface LocationOption {
+  label: string;
+  value: Location;
+}
+
+// Form types
+export interface UserFormValues {
+  username: string;
+  email: string;
+  role: UserRole | "";
+  isActive: boolean;
+  businessType?: BusinessType;
+  expiryDate?: string;
+  department?: ITDepartment;
+  locations?: Location[];
+  userLocation?: Location;
+}
+
+// Constants for frontend use
+export const IT_DEPARTMENTS: Record<string, ITDepartment> = {
+  IT_OPERATIONS: "it_operations",
+  IT_QCS: "it_qcs",
+} as const;
+
+export const USER_DEPARTMENTS: Record<string, UserDepartment> = {
+  QA: "qa",
+  QC: "qc",
+  PRODUCTION: "production",
+  MICROBIOLOGY: "microbiology",
+  HSE: "hse",
+  ENGINEERING: "engineering",
+  MARKETING: "marketing",
+  ACCOUNTS: "accounts",
+  VALIDATION: "validation",
+  PPIC: "ppic",
+  WAREHOUSE: "warehouse",
+  DEVELOPMENT: "development",
+} as const;
+
+export const LOCATIONS: Record<string, Location> = {
+  TONGI: "tongi",
+  SALNA: "salna",
+  MIRPUR: "mirpur",
+  MAWNA: "mawna",
+  RUPGANJ: "rupganj",
+} as const;

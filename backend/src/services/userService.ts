@@ -180,7 +180,7 @@ export class UserService {
       }
     }
 
-    // Apply location inheritance
+    // Apply location inheritance - FORCE automatic inheritance for IT persons and users
     if (
       ROLE_HIERARCHY[userData.role as keyof typeof ROLE_HIERARCHY]
         ?.locationInheritance
@@ -200,8 +200,12 @@ export class UserService {
         } else {
           inheritedData.userLocation = creator.userLocation;
         }
+        // Override any frontend location selection for IT persons
+        if (userData.role === "it_person") {
+          inheritedData.userLocation = creator.userLocation;
+        }
       } else if (userData.role === "user") {
-        // Normal users inherit location from IT Person
+        // Normal users inherit location from IT Person - ALWAYS override frontend selection
         inheritedData.userLocation = creator.userLocation;
       }
     }
@@ -236,6 +240,18 @@ export class UserService {
       userData.role
     );
 
+    let admin: {
+      userLocation: Location | null;
+      department: ITDepartment | null;
+    } | null = null;
+
+    if (hierarchyData.adminId) {
+      admin = await prisma.user.findUnique({
+        where: { id: hierarchyData.adminId },
+        select: { userLocation: true, department: true },
+      });
+    }
+
     // Create user with department and location data
     const user = await prisma.user.create({
       data: {
@@ -246,9 +262,9 @@ export class UserService {
         businessType: userData.businessType,
         accountLimit: userData.accountLimit,
         expiryDate: userData.expiryDate,
-        department: userData.department,
-        locations: userData.locations,
-        userLocation: userData.userLocation,
+        locations: userData.role === "super_admin" ? userData.locations : [],
+        userLocation: admin?.userLocation || userData.userLocation,
+        department: admin?.department || userData.department,
         createdById: creatorId,
         ...hierarchyData,
       },
