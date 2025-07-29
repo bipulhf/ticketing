@@ -13,7 +13,7 @@ export class TicketController {
   static createTicket = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
       const ticketData: CreateTicketRequest = req.body;
-      const createdById = req.user?.id;
+      const createdById = req.user?.id || 0;
 
       if (!createdById) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -34,8 +34,8 @@ export class TicketController {
 
   static getTicketById = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const { id } = req.params;
-      const userId = req.user?.id;
+      const id = parseInt(req.params.id || "0");
+      const userId = req.user?.id || 0;
 
       if (!userId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -56,9 +56,9 @@ export class TicketController {
 
   static updateTicket = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const { id } = req.params;
+      const id = parseInt(req.params.id || "0");
       const updateData: UpdateTicketRequest = req.body;
-      const updaterId = req.user?.id;
+      const updaterId = req.user?.id || 0;
 
       if (!updaterId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -83,7 +83,7 @@ export class TicketController {
 
   static getTickets = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
 
       if (!userId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -115,9 +115,9 @@ export class TicketController {
 
   static closeTicket = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const { id } = req.params;
+      const id = parseInt(req.params.id || "0");
       const { notes } = req.body;
-      const updaterId = req.user?.id;
+      const updaterId = req.user?.id || 0;
 
       if (!updaterId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -146,8 +146,8 @@ export class TicketController {
 
   static reopenTicket = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const { id } = req.params;
-      const updaterId = req.user?.id;
+      const id = parseInt(req.params.id || "0");
+      const updaterId = req.user?.id || 0;
 
       if (!updaterId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({

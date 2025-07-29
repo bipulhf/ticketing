@@ -12,7 +12,7 @@ export class UserController {
         ...req.body,
         role: "super_admin",
       };
-      const creatorId = req.user?.id;
+      const creatorId = req.user?.id || 0;
 
       if (!creatorId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -41,7 +41,7 @@ export class UserController {
         ...req.body,
         role: "admin",
       };
-      const creatorId = req.user?.id;
+      const creatorId = req.user?.id || 0;
 
       if (!creatorId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -70,7 +70,7 @@ export class UserController {
         ...req.body,
         role: "it_person",
       };
-      const creatorId = req.user?.id;
+      const creatorId = req.user?.id || 0;
 
       if (!creatorId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -99,7 +99,7 @@ export class UserController {
         ...req.body,
         role: "user",
       };
-      const creatorId = req.user?.id;
+      const creatorId = req.user?.id || 0;
 
       if (!creatorId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -124,7 +124,7 @@ export class UserController {
 
   static getUsersByCreator = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const creatorId = req.user?.id;
+      const creatorId = req.user?.id || 0;
 
       if (!creatorId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -145,7 +145,7 @@ export class UserController {
 
   static getUser = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const { id } = req.params;
+      const id = parseInt(req.params.id || "0");
 
       const user = await UserService.getUser(id!);
 
@@ -166,7 +166,7 @@ export class UserController {
 
   static getMyUsers = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const creatorId = req.user?.id;
+      const creatorId = req.user?.id || 0;
       const {
         page = "1",
         limit = "10",
@@ -307,8 +307,8 @@ export class UserController {
 
   static updateUser = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const { id } = req.params;
-      const updaterId = req.user?.id;
+      const id = parseInt(req.params.id || "0");
+      const updaterId = req.user?.id || 0;
 
       if (!updaterId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -330,8 +330,8 @@ export class UserController {
 
   static deleteUser = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const { id } = req.params;
-      const deleterId = req.user?.id;
+      const id = parseInt(req.params.id || "0");
+      const deleterId = req.user?.id || 0;
 
       if (!deleterId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -352,7 +352,7 @@ export class UserController {
 
   static updateSelfProfile = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
 
       if (!userId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -380,7 +380,7 @@ export class UserController {
 
   static updateSelfPassword = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
 
       if (!userId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -414,8 +414,8 @@ export class UserController {
 
   static resetUserPassword = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const { userId } = req.params;
-      const resetterId = req.user?.id;
+      const userId = parseInt(req.params.id || "0");
+      const resetterId = req.user?.id || 0;
 
       if (!resetterId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({
@@ -444,7 +444,7 @@ export class UserController {
 
   static getAvailableLocations = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
 
       if (!userId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({

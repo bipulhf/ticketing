@@ -12,7 +12,7 @@ export class DashboardController {
    */
   static getDashboardMetrics = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
       const { startDate, endDate } = req.query as {
         startDate?: string;
         endDate?: string;
@@ -48,7 +48,7 @@ export class DashboardController {
    */
   static getSystemOwnerDashboard = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
       const { startDate, endDate } = req.query as {
         startDate?: string;
         endDate?: string;
@@ -162,7 +162,7 @@ export class DashboardController {
    */
   static getSuperAdminDashboard = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
       const { startDate, endDate } = req.query as {
         startDate?: string;
         endDate?: string;
@@ -250,7 +250,7 @@ export class DashboardController {
    */
   static getAdminDashboard = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
       const { startDate, endDate } = req.query as {
         startDate?: string;
         endDate?: string;
@@ -303,7 +303,7 @@ export class DashboardController {
    */
   static getItPersonDashboard = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
       const { startDate, endDate } = req.query as {
         startDate?: string;
         endDate?: string;

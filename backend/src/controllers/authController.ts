@@ -21,7 +21,7 @@ export class AuthController {
     async (req: AuthenticatedRequest, res: Response) => {
       const registerData: RegisterRequest = {
         ...req.body,
-        createdById: req.user?.id || "",
+        createdById: req.user?.id || 0,
       };
 
       const result = await AuthService.register(registerData);
@@ -32,7 +32,7 @@ export class AuthController {
 
   static refreshToken = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const userId = req.user?.id;
+      const userId = req.user?.id || 0;
 
       if (!userId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({

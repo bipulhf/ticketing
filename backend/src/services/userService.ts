@@ -66,7 +66,7 @@ export interface DashboardMetrics {
 export class UserService {
   static async createUserWithValidation(
     userData: CreateUserRequest,
-    creatorId: string
+    creatorId: number
   ): Promise<User> {
     // Get creator information to validate permissions and limits
     const creator = await prisma.user.findUnique({
@@ -163,7 +163,7 @@ export class UserService {
   private static async applyDepartmentLocationInheritance(
     userData: CreateUserRequest,
     creator: any,
-    creatorId: string
+    creatorId: number
   ): Promise<CreateUserRequest> {
     const inheritedData = { ...userData };
 
@@ -216,7 +216,7 @@ export class UserService {
 
   static async createUser(
     userData: CreateUserRequest,
-    creatorId: string
+    creatorId: number
   ): Promise<User> {
     // Check if username or email already exists
     const existingUser = await prisma.user.findFirst({
@@ -288,7 +288,7 @@ export class UserService {
   }
 
   private static async buildHierarchyData(
-    creatorId: string,
+    creatorId: number,
     userRole: UserRole
   ): Promise<any> {
     const creator = await prisma.user.findUnique({
@@ -349,9 +349,9 @@ export class UserService {
   }
 
   static async updateUser(
-    userId: string,
+    userId: number,
     updateData: UpdateUserRequest,
-    updaterId: string
+    updaterId: number
   ): Promise<User> {
     const updater = await prisma.user.findUnique({
       where: { id: updaterId },
@@ -406,7 +406,7 @@ export class UserService {
     return updatedUser;
   }
 
-  static async deleteUser(userId: string, deleterId: string): Promise<void> {
+  static async deleteUser(userId: number, deleterId: number): Promise<void> {
     const deleter = await prisma.user.findUnique({
       where: { id: deleterId },
       select: { role: true },
@@ -437,7 +437,7 @@ export class UserService {
   }
 
   static async getUsersByCreator(
-    creatorId: string,
+    creatorId: number,
     page: number = 1,
     limit: number = 10
   ) {
@@ -478,7 +478,7 @@ export class UserService {
   }
 
   static async getDashboardMetrics(
-    userId: string,
+    userId: number,
     startDate?: string,
     endDate?: string
   ): Promise<DashboardMetrics> {
@@ -578,13 +578,13 @@ export class UserService {
     };
   }
 
-  static async getUser(userId: string): Promise<User | null> {
+  static async getUser(userId: number): Promise<User | null> {
     return await prisma.user.findUnique({
       where: { id: userId },
     });
   }
 
-  static async getUserProfile(userId: string): Promise<Partial<User> | null> {
+  static async getUserProfile(userId: number): Promise<Partial<User> | null> {
     return await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -657,7 +657,7 @@ export class UserService {
   }
 
   static async updateSelfProfile(
-    userId: string,
+    userId: number,
     updateData: {
       username?: string;
       email?: string;
@@ -720,7 +720,7 @@ export class UserService {
   }
 
   static async updateSelfPassword(
-    userId: string,
+    userId: number,
     currentPassword: string,
     newPassword: string
   ): Promise<User> {
@@ -774,8 +774,8 @@ export class UserService {
   }
 
   static async resetUserPassword(
-    targetUserId: string,
-    resetterId: string
+    targetUserId: number,
+    resetterId: number
   ): Promise<Omit<User, "password">> {
     // Get the resetter information to validate permissions
     const resetter = await prisma.user.findUnique({
@@ -848,7 +848,7 @@ export class UserService {
     return userWithoutPassword;
   }
 
-  static async getAvailableLocations(userId: string): Promise<{
+  static async getAvailableLocations(userId: number): Promise<{
     locations: Location[];
     userLocation: Location | null;
     canSelectMultiple: boolean;

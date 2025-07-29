@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { JWT_CONFIG } from "./constants";
 
 export interface JwtPayload {
-  userId: string;
+  userId: number;
   email: string;
   role: string;
   iat?: number;

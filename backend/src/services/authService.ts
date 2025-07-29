@@ -13,7 +13,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   success: boolean;
   user: {
-    id: string;
+    id: number;
     username: string;
     email: string;
     role: UserRole;
@@ -32,7 +32,7 @@ export interface RegisterRequest {
   accountLimit?: number;
   expiryDate?: Date;
   location?: string;
-  createdById: string;
+  createdById: number;
 }
 
 export class AuthService {
@@ -171,13 +171,13 @@ export class AuthService {
     };
   }
 
-  static async validateUser(userId: string): Promise<User | null> {
+  static async validateUser(userId: number): Promise<User | null> {
     return await prisma.user.findUnique({
       where: { id: userId },
     });
   }
 
-  static async refreshToken(userId: string): Promise<string> {
+  static async refreshToken(userId: number): Promise<string> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {

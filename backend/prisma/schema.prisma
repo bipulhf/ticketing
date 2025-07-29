@@ -57,7 +57,7 @@ enum Location {
 }
 
 model User {
-  id            String      @id @default(cuid())
+  id            Int      @id @default(autoincrement())
   username      String      @unique
   email         String      @unique
   password      String
@@ -65,24 +65,24 @@ model User {
   isActive      Boolean     @default(true)
   
   // Relationships
-  createdById   String?
+  createdById   Int?
   createdBy     User?       @relation("UserCreatedBy", fields: [createdById], references: [id])
   createdUsers  User[]      @relation("UserCreatedBy")
   
   // Hierarchy tracking fields - to track who created whom in the role hierarchy
-  systemOwnerId    String?
+  systemOwnerId    Int?
   systemOwner      User?     @relation("SystemOwnerHierarchy", fields: [systemOwnerId], references: [id])
   systemOwnerUsers User[]    @relation("SystemOwnerHierarchy")
   
-  superAdminId     String?
+  superAdminId     Int?
   superAdmin       User?     @relation("SuperAdminHierarchy", fields: [superAdminId], references: [id])
   superAdminUsers  User[]    @relation("SuperAdminHierarchy")
   
-  adminId          String?
+  adminId          Int?
   admin            User?     @relation("AdminHierarchy", fields: [adminId], references: [id])
   adminUsers       User[]    @relation("AdminHierarchy")
   
-  itPersonId       String?
+  itPersonId       Int?
   itPerson         User?     @relation("ItPersonHierarchy", fields: [itPersonId], references: [id])
   itPersonUsers    User[]    @relation("ItPersonHierarchy")
   
@@ -106,7 +106,7 @@ model User {
 }
 
 model Ticket {
-  id            String        @id @default(cuid())
+  id            Int         @id @default(autoincrement())
   description   String
   status        TicketStatus  @default(pending)
   notes         String?       // Notes added when closing ticket
@@ -122,7 +122,7 @@ model Ticket {
   location      Location?      // Required: Location for filtering
   
   // Relationships
-  createdById   String
+  createdById   Int
   createdBy     User          @relation("TicketCreatedBy", fields: [createdById], references: [id])
   
   // Attachments
@@ -135,13 +135,13 @@ model Ticket {
 }
 
 model Attachment {
-  id          String   @id @default(cuid())
+  id          Int   @id @default(autoincrement())
   name        String   // Display name for the attachment
   url         String   // URL/link to the attachment
   fileType    String?  // Optional file type (e.g., "pdf", "image", "document")
   
   // Relationships
-  ticketId    String
+  ticketId    Int
   ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   
   createdAt   DateTime @default(now())
@@ -151,7 +151,7 @@ model Attachment {
 
 // Archive models for data older than 6 months
 model ArchivedTicket {
-  id            String        @id
+  id            Int        @id
   description   String
   status        TicketStatus
   notes         String?
@@ -166,7 +166,7 @@ model ArchivedTicket {
   user_department UserDepartment? // Optional: User's department for display/filtering
   location      Location?      // Required: Location for filtering
   
-  createdById   String
+  createdById   Int
   createdAt     DateTime
   updatedAt     DateTime
   archivedAt    DateTime      @default(now())
@@ -177,11 +177,11 @@ model ArchivedTicket {
 }
 
 model ArchivedAttachment {
-  id             String         @id
+  id             Int         @id
   name           String         // Display name for the attachment
   url            String         // URL/link to the attachment
   fileType       String?        // Optional file type (e.g., "pdf", "image", "document")
-  ticketId       String
+  ticketId       Int
   ticket         ArchivedTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   createdAt      DateTime
   archivedAt     DateTime       @default(now())

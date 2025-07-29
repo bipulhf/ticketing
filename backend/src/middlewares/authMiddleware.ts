@@ -6,7 +6,7 @@ import { prisma } from "../config/prisma";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
-    id: string;
+    id: number;
     email: string;
     role: string;
     username: string;

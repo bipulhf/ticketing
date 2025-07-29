@@ -62,7 +62,7 @@ export interface GetTicketsFilters {
 export class TicketService {
   static async createTicket(
     ticketData: CreateTicketRequest,
-    createdById: string
+    createdById: number
   ) {
     const {
       description,
@@ -208,7 +208,7 @@ export class TicketService {
     return ticket;
   }
 
-  static async getTicketById(ticketId: string, userId: string) {
+  static async getTicketById(ticketId: number, userId: number) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -261,9 +261,9 @@ export class TicketService {
   }
 
   static async updateTicket(
-    ticketId: string,
+    ticketId: number,
     updateData: UpdateTicketRequest,
-    updaterId: string
+    updaterId: number
   ) {
     const user = await prisma.user.findUnique({
       where: { id: updaterId },
@@ -413,7 +413,7 @@ export class TicketService {
     return updatedTicket;
   }
 
-  static async getTickets(userId: string, filters: GetTicketsFilters = {}) {
+  static async getTickets(userId: number, filters: GetTicketsFilters = {}) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -535,7 +535,7 @@ export class TicketService {
 
   private static async canUserAccessTicket(
     userRole: string,
-    userId: string,
+    userId: number,
     ticket: any,
     user: any
   ): Promise<boolean> {
@@ -573,7 +573,7 @@ export class TicketService {
 
   private static async canUserModifyTicket(
     userRole: string,
-    userId: string,
+    userId: number,
     ticket: any,
     newStatus?: TicketStatus,
     user?: any
