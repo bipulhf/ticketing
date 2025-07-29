@@ -449,12 +449,6 @@ export class TicketService {
     if (location) {
       whereClause.location = location;
     }
-
-    // Add user department filter
-    if (department) {
-      whereClause.user_department = department;
-    }
-
     // Apply role-based access control
     if (user.role === "system_owner") {
       // System owner can see all tickets
@@ -635,11 +629,6 @@ export class TicketService {
       !["it_person", "admin", "super_admin", "system_owner"].includes(userRole)
     ) {
       return false;
-    }
-
-    // If closing a ticket, notes are required
-    if (newStatus === TICKET_STATUSES.SOLVED && !ticket.notes) {
-      throw createError(ERROR_MESSAGES.NOTES_REQUIRED, HTTP_STATUS.BAD_REQUEST);
     }
 
     return true;

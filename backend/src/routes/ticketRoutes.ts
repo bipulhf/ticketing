@@ -152,151 +152,6 @@ router.post(
  */
 router.get("/", requireUser, TicketController.getTickets);
 
-// Get specific ticket by ID
-/**
- * @swagger
- * /api/tickets/{id}:
- *   get:
- *     summary: Get ticket by ID
- *     description: Retrieve a specific ticket by its ID. Users can only view their own tickets, IT personnel can view any ticket.
- *     tags: [Tickets]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Unique ticket identifier
- *         example: clp123abc456def789
- *     responses:
- *       200:
- *         description: Ticket retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/TicketResponse'
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       403:
- *         description: Forbidden - Insufficient permissions or not ticket owner
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       404:
- *         description: Ticket not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.get("/:id", requireUser, TicketController.getTicketById);
-
-// Update ticket
-/**
- * @swagger
- * /api/tickets/{id}:
- *   put:
- *     summary: Update ticket
- *     description: Update ticket details including description and attachments. Users can only update their own pending tickets.
- *     tags: [Tickets]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Unique ticket identifier
- *         example: clp123abc456def789
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               description:
- *                 type: string
- *                 description: Updated description of the issue
- *                 example: "Updated description with more details about the email access issue"
- *               attachments:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     name:
- *                       type: string
- *                       description: File name
- *                       example: updated_screenshot.png
- *                     url:
- *                       type: string
- *                       description: File URL
- *                       example: /uploads/tickets/updated_screenshot_1234567890.png
- *                     fileType:
- *                       type: string
- *                       description: File MIME type
- *                       example: image/png
- *                 description: Updated attachments
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               description:
- *                 type: string
- *                 description: Updated description of the issue
- *               files:
- *                 type: array
- *                 items:
- *                   type: string
- *                   format: binary
- *                 description: New attachment files
- *     responses:
- *       200:
- *         description: Ticket updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/TicketResponse'
- *       400:
- *         description: Invalid request data or validation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       403:
- *         description: Forbidden - Cannot update this ticket (not owner or ticket already solved)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       404:
- *         description: Ticket not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.put(
-  "/:id",
-  requireUser,
-  validateAttachments,
-  TicketController.updateTicket
-);
-
 // Close ticket (only IT persons can close tickets)
 /**
  * @swagger
@@ -494,5 +349,150 @@ router.patch("/:id/reopen", requireUser, TicketController.reopenTicket);
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get("/search-options", TicketController.getSearchOptions);
+
+// Get specific ticket by ID
+/**
+ * @swagger
+ * /api/tickets/{id}:
+ *   get:
+ *     summary: Get ticket by ID
+ *     description: Retrieve a specific ticket by its ID. Users can only view their own tickets, IT personnel can view any ticket.
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique ticket identifier
+ *         example: clp123abc456def789
+ *     responses:
+ *       200:
+ *         description: Ticket retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TicketResponse'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - Insufficient permissions or not ticket owner
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Ticket not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get("/:id", requireUser, TicketController.getTicketById);
+
+// Update ticket
+/**
+ * @swagger
+ * /api/tickets/{id}:
+ *   put:
+ *     summary: Update ticket
+ *     description: Update ticket details including description and attachments. Users can only update their own pending tickets.
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique ticket identifier
+ *         example: clp123abc456def789
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               description:
+ *                 type: string
+ *                 description: Updated description of the issue
+ *                 example: "Updated description with more details about the email access issue"
+ *               attachments:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       description: File name
+ *                       example: updated_screenshot.png
+ *                     url:
+ *                       type: string
+ *                       description: File URL
+ *                       example: /uploads/tickets/updated_screenshot_1234567890.png
+ *                     fileType:
+ *                       type: string
+ *                       description: File MIME type
+ *                       example: image/png
+ *                 description: Updated attachments
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               description:
+ *                 type: string
+ *                 description: Updated description of the issue
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: New attachment files
+ *     responses:
+ *       200:
+ *         description: Ticket updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TicketResponse'
+ *       400:
+ *         description: Invalid request data or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Forbidden - Cannot update this ticket (not owner or ticket already solved)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Ticket not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.put(
+  "/:id",
+  requireUser,
+  validateAttachments,
+  TicketController.updateTicket
+);
 
 export { router as ticketRoutes };

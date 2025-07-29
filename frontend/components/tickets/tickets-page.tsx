@@ -45,6 +45,10 @@ import type {
 } from "@/types/types";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import {
+  getAvailableDepartments,
+  getAvailableLocations,
+} from "@/actions/users.action";
 
 export default function TicketPage({
   data,
@@ -70,6 +74,9 @@ export default function TicketPage({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [departments, setDepartments] = useState<ITDepartment[]>([]);
 
   // Separate search input state from the actual search filter
   const [searchInput, setSearchInput] = useState(
@@ -108,6 +115,23 @@ export default function TicketPage({
     setSearchInput(urlSearch);
     setActiveSearch(urlSearch);
   }, [searchParams]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const locations = await getAvailableLocations();
+      if (!locations.error) {
+        setLocations(locations.data.locations);
+      }
+    };
+    const fetchDepartments = async () => {
+      const departments = await getAvailableDepartments();
+      if (!departments.error) {
+        setDepartments(departments.data.departments);
+      }
+    };
+    fetchLocations();
+    fetchDepartments();
+  }, []);
 
   // Update URL with new filters
   const updateURLWithFilters = (filters: {
@@ -244,20 +268,25 @@ export default function TicketPage({
     toDate;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Ticket className="h-8 w-8" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-gray-900">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Ticket className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+            </div>
             Support Tickets
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage and track support tickets
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+            Manage and track support tickets efficiently
           </p>
         </div>
         {userType === "user" && (
-          <Button onClick={() => setIsCreateModalOpen(true)}>
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+          >
             <Plus className="mr-2 h-4 w-4" />
             New Ticket
           </Button>
@@ -265,33 +294,44 @@ export default function TicketPage({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
+            <CardTitle className="text-sm font-medium text-blue-700">
+              Total Tickets
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{statusCounts.all}</div>
+            <div className="text-3xl font-bold text-blue-900">
+              {statusCounts.all}
+            </div>
+            <p className="text-xs text-blue-600 mt-1">All tickets</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium text-yellow-700">
+              Pending
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-3xl font-bold text-yellow-900">
               {statusCounts.pending}
             </div>
+            <p className="text-xs text-yellow-600 mt-1">Awaiting resolution</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Resolved</CardTitle>
+            <CardTitle className="text-sm font-medium text-green-700">
+              Resolved
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-green-900">
               {statusCounts.resolved}
             </div>
+            <p className="text-xs text-green-600 mt-1">Successfully closed</p>
           </CardContent>
         </Card>
       </div>
@@ -302,18 +342,18 @@ export default function TicketPage({
           <CardTitle className="text-lg">Filters</CardTitle>
           <CardDescription>Search and filter tickets</CardDescription>
         </CardHeader>
-        <CardContent className="">
-          {/* Single Row: All Filters */}
-          <div className="flex flex-col xl:flex-row gap-3">
+
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4">
             {/* Search Input */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search tickets, users, or IDs..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyPress={handleSearchKeyPress}
+                  onKeyDown={handleSearchKeyPress}
                   className="pl-10"
                 />
               </div>
@@ -321,7 +361,7 @@ export default function TicketPage({
 
             {/* Status Filter */}
             <Select value={statusFilter} onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-full xl:w-40">
+              <SelectTrigger className="min-w-[140px]">
                 <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -332,19 +372,20 @@ export default function TicketPage({
               </SelectContent>
             </Select>
 
-            {/* Department Filter - Only for super_admin and system_owner */}
-            {searchOptions?.canSearchByDepartment && (
+            {/* Department Filter */}
+            {(userType === "super_admin" || userType === "system_owner") && (
               <Select
                 value={departmentFilter}
                 onValueChange={handleDepartmentChange}
+                disabled={!departments || departments.length === 0}
               >
-                <SelectTrigger className="w-full xl:w-40">
+                <SelectTrigger className="min-w-[160px]">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Department" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Departments</SelectItem>
-                  {searchOptions.departments.map((dept) => (
+                  {departments?.map((dept) => (
                     <SelectItem key={dept} value={dept}>
                       {dept.replace(/_/g, " ").toUpperCase()}
                     </SelectItem>
@@ -353,19 +394,20 @@ export default function TicketPage({
               </Select>
             )}
 
-            {/* Location Filter - Only for super_admin and system_owner */}
-            {searchOptions?.canSearchByLocation && (
+            {/* Location Filter */}
+            {(userType === "super_admin" || userType === "system_owner") && (
               <Select
                 value={locationFilter}
                 onValueChange={handleLocationChange}
+                disabled={!locations || locations.length === 0}
               >
-                <SelectTrigger className="w-full xl:w-40">
+                <SelectTrigger className="min-w-[140px]">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue placeholder="Location" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Locations</SelectItem>
-                  {searchOptions.locations.map((loc) => (
+                  {locations?.map((loc) => (
                     <SelectItem key={loc} value={loc}>
                       {loc.charAt(0).toUpperCase() + loc.slice(1)}
                     </SelectItem>
@@ -373,84 +415,91 @@ export default function TicketPage({
                 </SelectContent>
               </Select>
             )}
+          </div>
 
-            {/* From Date */}
-            <Popover>
-              <PopoverTrigger asChild>
+          {/* Date Range Section */}
+          <div className="mt-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* From Date */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full sm:w-auto justify-start text-left font-normal min-w-[140px]",
+                      !fromDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {fromDate ? format(fromDate, "MMM dd, yyyy") : "From Date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fromDate}
+                    onSelect={(date) => handleDateRangeChange(date, toDate)}
+                    disabled={(date) => (toDate ? date > toDate : false)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* To Date */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full sm:w-auto justify-start text-left font-normal min-w-[140px]",
+                      !toDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {toDate ? format(toDate, "MMM dd, yyyy") : "To Date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={toDate}
+                    onSelect={(date) => handleDateRangeChange(fromDate, date)}
+                    disabled={(date) => (fromDate ? date < fromDate : false)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Clear Date Button */}
+              {(fromDate || toDate) && (
                 <Button
                   variant="outline"
-                  className={cn(
-                    "w-full xl:w-40 justify-start text-left font-normal",
-                    !fromDate && "text-muted-foreground"
-                  )}
+                  size="sm"
+                  onClick={clearDateFilter}
+                  className="text-xs w-full sm:w-auto"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {fromDate ? format(fromDate, "MMM dd") : "From Date"}
+                  <X className="mr-1 h-3 w-3" />
+                  Clear Dates
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={fromDate}
-                  onSelect={(date) => handleDateRangeChange(date, toDate)}
-                  disabled={(date) => (toDate ? date > toDate : false)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+              )}
+            </div>
+          </div>
 
-            {/* To Date */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full xl:w-40 justify-start text-left font-normal",
-                    !toDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {toDate ? format(toDate, "MMM dd") : "To Date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={toDate}
-                  onSelect={(date) => handleDateRangeChange(fromDate, date)}
-                  disabled={(date) => (fromDate ? date < fromDate : false)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-
-            {/* Clear Date Button */}
-            {(fromDate || toDate) && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={clearDateFilter}
-                className="shrink-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-
-            {/* Apply Filters Button */}
-            <Button onClick={handleApplyFilters} className="xl:w-auto">
+          {/* Action Buttons Row */}
+          <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t">
+            <Button onClick={handleApplyFilters} className="w-full sm:w-auto">
               <Search className="mr-2 h-4 w-4" />
-              Apply
+              Apply Filters
             </Button>
 
-            {/* Clear All Button */}
             {hasActiveFilters && (
               <Button
                 variant="outline"
                 onClick={clearAllFilters}
-                className="xl:w-auto"
+                className="w-full sm:w-auto"
               >
                 <X className="mr-2 h-4 w-4" />
-                Clear
+                Clear All
               </Button>
             )}
           </div>
@@ -461,12 +510,14 @@ export default function TicketPage({
       <div className="space-y-4">
         {/* Loading State */}
         {isLoading && (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-              <h3 className="text-lg font-semibold mb-2">Loading tickets...</h3>
-              <p className="text-muted-foreground text-center">
-                Please wait while we fetch your tickets.
+          <Card className="border-2 border-dashed border-gray-200">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mb-6"></div>
+              <h3 className="text-xl font-semibold mb-3 text-gray-700">
+                Loading tickets...
+              </h3>
+              <p className="text-muted-foreground text-center max-w-md">
+                Please wait while we fetch your tickets from the database.
               </p>
             </CardContent>
           </Card>
@@ -474,11 +525,22 @@ export default function TicketPage({
 
         {/* Error State */}
         {error && !isLoading && (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <h3 className="text-lg font-semibold text-red-600 mb-2">Error</h3>
-              <p className="text-muted-foreground text-center mb-4">{error}</p>
-              <Button onClick={() => router.refresh()}>Retry</Button>
+          <Card className="border-2 border-dashed border-red-200 bg-red-50">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                <X className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-red-700 mb-3">
+                Error Loading Tickets
+              </h3>
+              <p className="text-red-600 text-center mb-6 max-w-md">{error}</p>
+              <Button
+                onClick={() => router.refresh()}
+                variant="outline"
+                className="border-red-300 text-red-700 hover:bg-red-100"
+              >
+                Try Again
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -486,19 +548,30 @@ export default function TicketPage({
         {/* Ticket Grid */}
         {!isLoading && !error && (
           <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
               {data.length === 0 ? (
-                <Card className="col-span-full">
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Ticket className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">
+                <Card className="col-span-full border-2 border-dashed border-gray-200 bg-gray-50">
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                      <Ticket className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-3 text-gray-700">
                       No tickets found
                     </h3>
-                    <p className="text-muted-foreground text-center">
+                    <p className="text-gray-500 text-center max-w-md mb-6">
                       {hasActiveFilters
-                        ? "Try adjusting your search or filter criteria"
-                        : "No tickets have been created yet"}
+                        ? "No tickets match your current search and filter criteria. Try adjusting your filters or search terms."
+                        : "No tickets have been created yet. Create your first ticket to get started."}
                     </p>
+                    {!hasActiveFilters && userType === "user" && (
+                      <Button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create First Ticket
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ) : (

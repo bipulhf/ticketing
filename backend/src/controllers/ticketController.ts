@@ -6,7 +6,7 @@ import {
   GetTicketsFilters,
 } from "../services/ticketService";
 import { asyncHandler } from "../middlewares/errorMiddleware";
-import { HTTP_STATUS } from "../utils/constants";
+import { ERROR_MESSAGES, HTTP_STATUS } from "../utils/constants";
 import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 
 export class TicketController {
@@ -118,6 +118,13 @@ export class TicketController {
       const id = parseInt(req.params.id || "0");
       const { notes } = req.body;
       const updaterId = req.user?.id || 0;
+
+      if (!notes) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          error: { message: ERROR_MESSAGES.NOTES_REQUIRED },
+        });
+      }
 
       if (!updaterId) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({

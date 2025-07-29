@@ -215,7 +215,7 @@ export const closeTicket = async (ticketId: string, notes: string) => {
   const token = cookieStore.get("token")?.value;
 
   const response = await fetchJson(`tickets/${ticketId}/close`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
@@ -234,7 +234,7 @@ export const reopenTicket = async (ticketId: string) => {
   const token = cookieStore.get("token")?.value;
 
   const response = await fetchJson(`tickets/${ticketId}/reopen`, {
-    method: "PUT",
+    method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,
     },
