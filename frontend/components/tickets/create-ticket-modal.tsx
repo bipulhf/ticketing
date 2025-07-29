@@ -78,25 +78,6 @@ const createTicketSchema = z.object({
   department: z.enum(["it_operations", "it_qcs"], {
     required_error: "Department is required",
   }),
-  location: z.enum(["tongi", "salna", "mirpur", "mawna", "rupganj"], {
-    required_error: "Location is required",
-  }),
-  user_department: z
-    .enum([
-      "qa",
-      "qc",
-      "production",
-      "microbiology",
-      "hse",
-      "engineering",
-      "marketing",
-      "accounts",
-      "validation",
-      "ppic",
-      "warehouse",
-      "development",
-    ])
-    .optional(),
 });
 
 type CreateTicketForm = z.infer<typeof createTicketSchema>;
@@ -123,7 +104,6 @@ export function CreateTicketModal({
   onSuccess,
   userRole,
   userDepartment,
-  userLocation,
 }: CreateTicketModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -157,8 +137,6 @@ export function CreateTicketModal({
       device_name: "",
       ip_number: "",
       department: userDepartment || "it_operations",
-      location: userLocation || "tongi",
-      user_department: undefined,
     },
   });
 
@@ -194,8 +172,6 @@ export function CreateTicketModal({
         device_name: data.device_name || "",
         ip_number: data.ip_number,
         department: data.department,
-        location: data.location,
-        user_department: data.user_department,
         uploadedFiles,
       });
 
@@ -365,81 +341,7 @@ export function CreateTicketModal({
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      Location
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select location" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.entries(LOCATIONS).map(([key, value]) => (
-                          <SelectItem key={value} value={value}>
-                            {value.charAt(0).toUpperCase() +
-                              value.slice(1).toLowerCase()}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      {userLocation
-                        ? "Your assigned location"
-                        : "Select the location"}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-
-            {/* User Department (for normal users only) */}
-            {showUserDepartment && (
-              <FormField
-                control={form.control}
-                name="user_department"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col gap-2">
-                    <FormLabel className="flex items-center gap-2">
-                      <Building className="h-4 w-4" />
-                      Your Department
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select your department" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.entries(USER_DEPARTMENTS).map(
-                          ([key, value]) => (
-                            <SelectItem key={value} value={value}>
-                              {key.charAt(0).toUpperCase() +
-                                key.slice(1).toLowerCase()}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Your department for display and filtering purposes
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
 
             {/* File Upload */}
             <div className="space-y-4">

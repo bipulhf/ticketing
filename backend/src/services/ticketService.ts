@@ -23,6 +23,7 @@ import {
   buildPaginationFilter,
   calculatePaginationInfo,
 } from "../utils/filter";
+import { LOCATIONS, IT_DEPARTMENTS } from "../utils/constants";
 
 export interface CreateTicketRequest {
   description: string;
@@ -45,7 +46,6 @@ export interface UpdateTicketRequest {
   ip_number?: string;
   department?: ITDepartment;
   location?: Location;
-  user_department?: UserDepartment;
 }
 
 export interface GetTicketsFilters {
@@ -71,8 +71,6 @@ export class TicketService {
       device_name,
       ip_number,
       department,
-      location,
-      user_department,
     } = ticketData;
 
     // Validate that the user exists and can create tickets
@@ -108,8 +106,7 @@ export class TicketService {
       device_name,
       ip_number,
       department: department as string,
-      location: location as string,
-      user_department: user_department as string | undefined,
+      location: user.userLocation as string,
     });
 
     if (!validation.isValid) {
@@ -121,26 +118,15 @@ export class TicketService {
 
     // Determine the department for the ticket based on user role
     let ticketDepartment = department;
-    let ticketUserDepartment = user_department;
-
-    if (user.role === "user") {
-      // Normal users inherit department from their IT Person creator
-      // The department field should be IT Operations or IT QCS based on issue type
-      // user_department is for display/filtering only
-      ticketUserDepartment = user_department;
-    } else if (user.role === "it_person") {
-      // IT Person uses their assigned department
-      ticketDepartment = user.department || department;
-    }
 
     // Determine the location for the ticket
-    let ticketLocation = location;
+    let ticketLocation = user.userLocation;
     if (user.role === "user") {
       // Normal users inherit location from their IT Person
-      ticketLocation = user.userLocation || location;
+      ticketLocation = user.userLocation || user.userLocation;
     } else if (user.role === "it_person") {
       // IT Person uses their assigned location
-      ticketLocation = user.userLocation || location;
+      ticketLocation = user.userLocation || user.userLocation;
     }
 
     // Sanitize attachment data
@@ -159,7 +145,6 @@ export class TicketService {
           ip_number,
           department: ticketDepartment,
           location: ticketLocation,
-          user_department: ticketUserDepartment || null,
         },
         include: {
           createdBy: {
@@ -328,8 +313,6 @@ export class TicketService {
         ip_number: updateData.ip_number || ticket.ip_number || "",
         department: (updateData.department || ticket.department) as string,
         location: (updateData.location || ticket.location) as string,
-        user_department: (updateData.user_department ||
-          ticket.user_department) as string | undefined,
       });
 
       if (!validation.isValid) {
@@ -362,9 +345,6 @@ export class TicketService {
           ...(updateData.ip_number && { ip_number: updateData.ip_number }),
           ...(updateData.department && { department: updateData.department }),
           ...(updateData.location && { location: updateData.location }),
-          ...(updateData.user_department && {
-            user_department: updateData.user_department,
-          }),
         },
         include: {
           createdBy: {
@@ -530,6 +510,69 @@ export class TicketService {
     return {
       tickets,
       pagination,
+    };
+  }
+
+  static async getSearchOptions(userId: number): Promise<{
+    locations: Location[];
+    departments: ITDepartment[];
+    canSearchByDepartment: boolean;
+    canSearchByLocation: boolean;
+  }> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        locations: true,
+        userLocation: true,
+        department: true,
+      },
+    });
+
+    if (!user) {
+      throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Only super_admin and system_owner can search by department and location
+    const canSearchByDepartment = ["system_owner", "super_admin"].includes(
+      user.role
+    );
+    const canSearchByLocation = ["system_owner", "super_admin"].includes(
+      user.role
+    );
+
+    if (!canSearchByDepartment && !canSearchByLocation) {
+      return {
+        locations: [],
+        departments: [],
+        canSearchByDepartment: false,
+        canSearchByLocation: false,
+      };
+    }
+
+    let locations: Location[] = [];
+    let departments: ITDepartment[] = [];
+
+    if (user.role === "system_owner") {
+      // System owner can search by all locations and departments
+      locations = Object.values(LOCATIONS);
+      departments = Object.values(IT_DEPARTMENTS);
+    } else if (user.role === "super_admin") {
+      // Super admin can search by their assigned locations and departments
+      if (user.locations && user.locations.length > 0) {
+        locations = user.locations;
+      }
+      if (user.department) {
+        departments = [user.department];
+      }
+    }
+
+    return {
+      locations,
+      departments,
+      canSearchByDepartment,
+      canSearchByLocation,
     };
   }
 

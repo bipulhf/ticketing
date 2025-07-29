@@ -51,7 +51,7 @@ export default function TicketPage({
   pagination,
   userType,
   userDepartment,
-  userLocation,
+  searchOptions,
   isLoading = false,
   error = null,
 }: {
@@ -59,7 +59,12 @@ export default function TicketPage({
   pagination: PaginationInfo;
   userType: UserRole;
   userDepartment?: ITDepartment;
-  userLocation?: Location;
+  searchOptions?: {
+    locations: Location[];
+    departments: ITDepartment[];
+    canSearchByDepartment: boolean;
+    canSearchByLocation: boolean;
+  } | null;
   isLoading?: boolean;
   error?: string | null;
 }) {
@@ -75,6 +80,12 @@ export default function TicketPage({
   );
   const [statusFilter, setStatusFilter] = useState(
     searchParams.get("status") || "all"
+  );
+  const [departmentFilter, setDepartmentFilter] = useState(
+    searchParams.get("department") || "all"
+  );
+  const [locationFilter, setLocationFilter] = useState(
+    searchParams.get("location") || "all"
   );
   const [fromDate, setFromDate] = useState<Date | undefined>(
     searchParams.get("fromDate")
@@ -102,6 +113,8 @@ export default function TicketPage({
   const updateURLWithFilters = (filters: {
     search?: string;
     status?: string;
+    department?: string;
+    location?: string;
     fromDate?: Date;
     toDate?: Date;
     page?: number;
@@ -113,6 +126,12 @@ export default function TicketPage({
     }
     if (filters.status && filters.status !== "all") {
       params.set("status", filters.status);
+    }
+    if (filters.department && filters.department !== "all") {
+      params.set("department", filters.department);
+    }
+    if (filters.location && filters.location !== "all") {
+      params.set("location", filters.location);
     }
     if (filters.fromDate) {
       params.set("fromDate", format(filters.fromDate, "yyyy-MM-dd"));
@@ -142,6 +161,8 @@ export default function TicketPage({
     updateURLWithFilters({
       search: activeSearch,
       status: statusFilter,
+      department: departmentFilter,
+      location: locationFilter,
       fromDate,
       toDate,
       page,
@@ -157,6 +178,14 @@ export default function TicketPage({
     setStatusFilter(value);
   };
 
+  const handleDepartmentChange = (value: string) => {
+    setDepartmentFilter(value);
+  };
+
+  const handleLocationChange = (value: string) => {
+    setLocationFilter(value);
+  };
+
   const handleDateRangeChange = (newFromDate?: Date, newToDate?: Date) => {
     setFromDate(newFromDate);
     setToDate(newToDate);
@@ -168,6 +197,8 @@ export default function TicketPage({
     updateURLWithFilters({
       search: searchInput,
       status: statusFilter,
+      department: departmentFilter,
+      location: locationFilter,
       fromDate,
       toDate,
       page: 1,
@@ -183,6 +214,8 @@ export default function TicketPage({
     setSearchInput("");
     setActiveSearch("");
     setStatusFilter("all");
+    setDepartmentFilter("all");
+    setLocationFilter("all");
     setFromDate(undefined);
     setToDate(undefined);
     setCurrentPage(1);
@@ -203,7 +236,12 @@ export default function TicketPage({
 
   // Check if any filters are active
   const hasActiveFilters =
-    activeSearch || statusFilter !== "all" || fromDate || toDate;
+    activeSearch ||
+    statusFilter !== "all" ||
+    departmentFilter !== "all" ||
+    locationFilter !== "all" ||
+    fromDate ||
+    toDate;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -293,6 +331,48 @@ export default function TicketPage({
                 <SelectItem value="solved">Solved</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Department Filter - Only for super_admin and system_owner */}
+            {searchOptions?.canSearchByDepartment && (
+              <Select
+                value={departmentFilter}
+                onValueChange={handleDepartmentChange}
+              >
+                <SelectTrigger className="w-full xl:w-40">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  {searchOptions.departments.map((dept) => (
+                    <SelectItem key={dept} value={dept}>
+                      {dept.replace(/_/g, " ").toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* Location Filter - Only for super_admin and system_owner */}
+            {searchOptions?.canSearchByLocation && (
+              <Select
+                value={locationFilter}
+                onValueChange={handleLocationChange}
+              >
+                <SelectTrigger className="w-full xl:w-40">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {searchOptions.locations.map((loc) => (
+                    <SelectItem key={loc} value={loc}>
+                      {loc.charAt(0).toUpperCase() + loc.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             {/* From Date */}
             <Popover>
@@ -457,7 +537,6 @@ export default function TicketPage({
         onSuccess={handleTicketCreated}
         userRole={userType}
         userDepartment={userDepartment}
-        userLocation={userLocation}
       />
     </div>
   );

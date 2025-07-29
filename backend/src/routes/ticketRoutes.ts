@@ -435,4 +435,64 @@ router.patch(
  */
 router.patch("/:id/reopen", requireUser, TicketController.reopenTicket);
 
+/**
+ * @swagger
+ * /api/tickets/search-options:
+ *   get:
+ *     summary: Get search options for tickets
+ *     description: Get available locations and departments for ticket search. Only super_admin and system_owner can search by department and location.
+ *     tags: [Tickets]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Search options retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     locations:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         enum: [tongi, salna, mirpur, mawna, rupganj]
+ *                       description: Available locations for search
+ *                       example: ["tongi", "salna"]
+ *                     departments:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         enum: [it_operations, it_qcs]
+ *                       description: Available departments for search
+ *                       example: ["it_operations"]
+ *                     canSearchByDepartment:
+ *                       type: boolean
+ *                       description: Whether user can search by department
+ *                       example: true
+ *                     canSearchByLocation:
+ *                       type: boolean
+ *                       description: Whether user can search by location
+ *                       example: true
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get("/search-options", TicketController.getSearchOptions);
+
 export { router as ticketRoutes };

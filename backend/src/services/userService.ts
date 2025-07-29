@@ -15,6 +15,7 @@ import {
   PASSWORD_CONFIG,
   ROLE_HIERARCHY,
   LOCATIONS,
+  IT_DEPARTMENTS,
 } from "../utils/constants";
 import { canCreateAccount, canManageUser } from "../middlewares/roleMiddleware";
 import {
@@ -927,6 +928,88 @@ export class UserService {
     // Normal users cannot assign locations
     throw createError(
       "Users cannot assign locations to other users",
+      HTTP_STATUS.FORBIDDEN
+    );
+  }
+
+  static async getAvailableDepartments(userId: number): Promise<{
+    departments: ITDepartment[];
+    userDepartment: ITDepartment | null;
+    canSelectMultiple: boolean;
+  }> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        department: true,
+        systemOwnerId: true,
+        superAdminId: true,
+        adminId: true,
+      },
+    });
+
+    if (!user) {
+      throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    // System Owner can assign any departments
+    if (user.role === "system_owner") {
+      return {
+        departments: Object.values(IT_DEPARTMENTS),
+        userDepartment: null,
+        canSelectMultiple: true,
+      };
+    }
+
+    // Super Admin can assign their department to Admin/IT Person
+    if (user.role === "super_admin") {
+      if (!user.department) {
+        throw createError(
+          "Super Admin has no assigned department",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      return {
+        departments: [user.department],
+        userDepartment: user.department,
+        canSelectMultiple: false,
+      };
+    }
+
+    // Admin can assign their department to IT Person/User
+    if (user.role === "admin") {
+      if (!user.department) {
+        throw createError(
+          "Admin has no assigned department",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      return {
+        departments: [user.department],
+        userDepartment: user.department,
+        canSelectMultiple: false,
+      };
+    }
+
+    // IT Person can assign their department to User
+    if (user.role === "it_person") {
+      if (!user.department) {
+        throw createError(
+          "IT Person has no assigned department",
+          HTTP_STATUS.BAD_REQUEST
+        );
+      }
+      return {
+        departments: [user.department],
+        userDepartment: user.department,
+        canSelectMultiple: false,
+      };
+    }
+
+    // Normal users cannot assign departments
+    throw createError(
+      "Users cannot assign departments to other users",
       HTTP_STATUS.FORBIDDEN
     );
   }

@@ -123,8 +123,6 @@ export const createTicketWithFiles = async (ticketData: {
   device_name: string;
   ip_number: string;
   department: ITDepartment;
-  location: Location;
-  user_department?: UserDepartment;
   uploadedFiles: Array<{
     name: string;
     url: string;
@@ -141,8 +139,6 @@ export const createTicketWithFiles = async (ticketData: {
     device_name: ticketData.device_name,
     ip_number: ticketData.ip_number,
     department: ticketData.department,
-    location: ticketData.location,
-    user_department: ticketData.user_department,
     attachments: ticketData.uploadedFiles.map((file) => ({
       name: file.name,
       url: file.url,
@@ -239,6 +235,23 @@ export const reopenTicket = async (ticketId: string) => {
 
   const response = await fetchJson(`tickets/${ticketId}/reopen`, {
     method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.success) {
+    return response.data;
+  }
+  return { error: response.error.message };
+};
+
+export const getTicketSearchOptions = async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const response = await fetchJson("tickets/search-options", {
+    method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
     },

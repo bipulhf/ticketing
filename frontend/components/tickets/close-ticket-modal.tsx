@@ -114,7 +114,7 @@ export function CloseTicketModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Close Ticket #{ticket.id.toUpperCase()}</DialogTitle>
+          <DialogTitle>Close Ticket #{ticket.id}</DialogTitle>
           <DialogDescription>
             Review the ticket details and provide resolution notes before
             closing.

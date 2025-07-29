@@ -100,7 +100,7 @@ export function TicketCard({
           <div className="space-y-1 my-2">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-sm text-muted-foreground">
-                Ticket #{ticket.id.toUpperCase()}
+                Ticket #{ticket.id}
               </h3>
               <TicketStatusBadge status={ticket.status} />
             </div>

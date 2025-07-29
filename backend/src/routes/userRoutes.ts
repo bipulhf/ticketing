@@ -765,6 +765,51 @@ router.get("/available-locations", UserController.getAvailableLocations);
 
 /**
  * @swagger
+ * /api/users/available-departments:
+ *   get:
+ *     summary: Get available departments for user creation
+ *     description: Returns available departments that the current user can assign when creating new users based on their role hierarchy
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Available departments retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     departments:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                         enum: [it_operations, it_qcs]
+ *                       example: ["it_operations", "it_qcs"]
+ *                     userDepartment:
+ *                       type: string
+ *                       nullable: true
+ *                       example: "it_operations"
+ *                     canSelectMultiple:
+ *                       type: boolean
+ *                       example: true
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - User cannot assign departments
+ *       404:
+ *         description: User not found
+ */
+router.get("/available-departments", UserController.getAvailableDepartments);
+
+/**
+ * @swagger
  * /api/users/self/profile:
  *   put:
  *     summary: Update self profile

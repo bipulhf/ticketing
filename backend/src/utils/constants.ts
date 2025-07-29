@@ -158,8 +158,8 @@ export const PASSWORD_CONFIG = {
 } as const;
 
 export const RATE_LIMIT_CONFIG = {
-  WINDOW_MS: 15 * 60 * 1000, // 15 minutes
-  MAX_REQUESTS: 100,
+  WINDOW_MS: 1 * 60 * 1000, // 15 minutes
+  MAX_REQUESTS: 60,
 } as const;
 
 export const HTTP_STATUS = {

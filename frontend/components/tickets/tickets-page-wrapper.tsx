@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { getTickets } from "@/actions/tickets.action";
+import { getTickets, getTicketSearchOptions } from "@/actions/tickets.action";
 import TicketsPage from "./tickets-page";
 import {
   TicketsListResponse,
@@ -28,6 +28,13 @@ export default function TicketsPageWrapper({
     department?: ITDepartment;
     userLocation?: Location;
   } | null>(null);
+  const [searchOptions, setSearchOptions] = useState<{
+    locations: Location[];
+    departments: ITDepartment[];
+    canSearchByDepartment: boolean;
+    canSearchByLocation: boolean;
+  } | null>(null);
+  const [loadingSearchOptions, setLoadingSearchOptions] = useState(false);
 
   // Get user information from cookies
   useEffect(() => {
@@ -54,10 +61,31 @@ export default function TicketsPageWrapper({
     getUserInfo();
   }, []);
 
+  // Fetch search options
+  useEffect(() => {
+    const fetchSearchOptions = async () => {
+      setLoadingSearchOptions(true);
+      try {
+        const result = await getTicketSearchOptions();
+        if (!result.error) {
+          setSearchOptions(result);
+        }
+      } catch (error) {
+        console.error("Error fetching search options:", error);
+      } finally {
+        setLoadingSearchOptions(false);
+      }
+    };
+
+    fetchSearchOptions();
+  }, []);
+
   // Get search params
   const page = searchParams.get("page");
   const limit = searchParams.get("limit");
   const status = searchParams.get("status");
+  const department = searchParams.get("department");
+  const location = searchParams.get("location");
   const fromDate = searchParams.get("fromDate");
   const toDate = searchParams.get("toDate");
   const search = searchParams.get("search");
@@ -73,6 +101,8 @@ export default function TicketsPageWrapper({
           page: page ? parseInt(page, 10) : 1,
           limit: limit ? parseInt(limit, 10) : 10,
           status: status || undefined,
+          department: department || undefined,
+          location: location || undefined,
           fromDate: fromDate || undefined,
           toDate: toDate || undefined,
           search: search || undefined,
@@ -95,7 +125,7 @@ export default function TicketsPageWrapper({
     };
 
     fetchTickets();
-  }, [page, limit, status, fromDate, toDate, search]);
+  }, [page, limit, status, department, location, fromDate, toDate, search]);
 
   // Error state
   if (error) {
@@ -130,7 +160,7 @@ export default function TicketsPageWrapper({
       }
       userType={userRole}
       userDepartment={userInfo?.department}
-      userLocation={userInfo?.userLocation}
+      searchOptions={searchOptions}
       isLoading={loading}
       error={error}
     />

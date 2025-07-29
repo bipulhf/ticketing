@@ -172,4 +172,25 @@ export class TicketController {
       return;
     }
   );
+
+  static getSearchOptions = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.id || 0;
+
+      if (!userId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not authenticated" },
+        });
+      }
+
+      const searchOptions = await TicketService.getSearchOptions(userId);
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: searchOptions,
+      });
+      return;
+    }
+  );
 }

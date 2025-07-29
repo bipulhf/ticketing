@@ -242,8 +242,22 @@ export const getAvailableLocations = async () => {
       Authorization: `Bearer ${token}`,
     },
   });
+  if (response.success) {
+    return response.data;
+  }
+  return { error: response.error.message };
+};
 
-  console.log(response);
+export const getAvailableDepartments = async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const response = await fetchJson("users/available-departments", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   if (response.success) {
     return response.data;
   }

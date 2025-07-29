@@ -173,12 +173,16 @@ export class UserController {
         role,
         search,
         isActive,
+        department,
+        location,
       } = req.query as {
         page?: string;
         limit?: string;
         role?: string;
         search?: string;
         isActive?: string;
+        department?: string;
+        location?: string;
       };
 
       if (!creatorId) {
@@ -208,6 +212,14 @@ export class UserController {
 
       if (isActive !== undefined) {
         filters.isActive = isActive === "true";
+      }
+
+      if (department && department !== "all") {
+        filters.department = department;
+      }
+
+      if (location && location !== "all") {
+        filters.userLocation = location;
       }
 
       if (search) {
@@ -263,6 +275,8 @@ export class UserController {
           role: role || null,
           search: search || null,
           isActive: isActive || null,
+          department: department || null,
+          location: location || null,
         },
       });
       return;
@@ -460,6 +474,29 @@ export class UserController {
       res.status(HTTP_STATUS.OK).json({
         success: true,
         data: availableLocations,
+      });
+      return;
+    }
+  );
+
+  static getAvailableDepartments = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      const userId = req.user?.id || 0;
+
+      if (!userId) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not authenticated" },
+        });
+      }
+
+      const availableDepartments = await UserService.getAvailableDepartments(
+        userId
+      );
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: availableDepartments,
       });
       return;
     }

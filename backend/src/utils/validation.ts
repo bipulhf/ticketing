@@ -65,7 +65,6 @@ export function validateTicketRequiredFields(data: {
   ip_number: string;
   department: string;
   location: string;
-  user_department?: string | undefined;
 }) {
   const errors: string[] = [];
 
@@ -88,11 +87,6 @@ export function validateTicketRequiredFields(data: {
     errors.push("Location is required");
   } else if (!isValidLocation(data.location)) {
     errors.push("Invalid location");
-  }
-
-  // Optional user department validation
-  if (data.user_department && !isValidUserDepartment(data.user_department)) {
-    errors.push("Invalid user department");
   }
 
   return {

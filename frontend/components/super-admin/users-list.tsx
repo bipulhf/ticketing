@@ -75,6 +75,8 @@ import {
   updateUser,
   deleteUser,
   resetUserPassword,
+  getAvailableLocations,
+  getAvailableDepartments,
 } from "@/actions/users.action";
 import { UserInfoModal, UserFormModal } from "@/components/users/user-modal";
 import { toast } from "sonner";
@@ -83,6 +85,8 @@ interface Filters {
   search: string;
   role: string;
   isActive: string;
+  department: string;
+  location: string;
   page: number;
   limit: number;
 }
@@ -95,6 +99,8 @@ export function SuperAdminUsersList() {
     search: "",
     role: "all",
     isActive: "all",
+    department: "all",
+    location: "all",
     page: 1,
     limit: 10,
   });
@@ -104,6 +110,17 @@ export function SuperAdminUsersList() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [availableLocations, setAvailableLocations] = useState<{
+    locations: string[];
+    userLocation: string | null;
+    canSelectMultiple: boolean;
+  } | null>(null);
+  const [availableDepartments, setAvailableDepartments] = useState<{
+    departments: string[];
+    userDepartment: string | null;
+    canSelectMultiple: boolean;
+  } | null>(null);
+  const [loadingOptions, setLoadingOptions] = useState(false);
 
   const fetchMyUsers = useCallback(async () => {
     setLoading(true);
@@ -114,6 +131,9 @@ export function SuperAdminUsersList() {
     if (filters.search) params.append("search", filters.search);
     if (filters.role !== "all") params.append("role", filters.role);
     if (filters.isActive !== "all") params.append("isActive", filters.isActive);
+    if (filters.department !== "all")
+      params.append("department", filters.department);
+    if (filters.location !== "all") params.append("location", filters.location);
     params.append("page", filters.page.toString());
     params.append("limit", filters.limit.toString());
 
@@ -136,6 +156,33 @@ export function SuperAdminUsersList() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  // Fetch available locations and departments
+  const fetchAvailableOptions = useCallback(async () => {
+    setLoadingOptions(true);
+    try {
+      const [locationsResult, departmentsResult] = await Promise.all([
+        getAvailableLocations(),
+        getAvailableDepartments(),
+      ]);
+
+      if (!locationsResult.error) {
+        setAvailableLocations(locationsResult.data);
+      }
+
+      if (!departmentsResult.error) {
+        setAvailableDepartments(departmentsResult.data);
+      }
+    } catch (error) {
+      console.error("Error fetching available options:", error);
+    } finally {
+      setLoadingOptions(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAvailableOptions();
+  }, []);
 
   const handleSearch = (value: string) => {
     setFilters((prev) => ({ ...prev, search: value, page: 1 }));
@@ -450,7 +497,7 @@ export function SuperAdminUsersList() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search users by name, email, or location..."
+                  placeholder="Search users by name, email, department, or location..."
                   value={filters.search}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="pl-10"
@@ -483,6 +530,52 @@ export function SuperAdminUsersList() {
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="true">Active</SelectItem>
                   <SelectItem value="false">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filters.department}
+                onValueChange={(value) =>
+                  handleFilterChange("department", value)
+                }
+                disabled={loadingOptions}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue
+                    placeholder={
+                      loadingOptions ? "Loading..." : "Filter by department"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  {availableDepartments?.departments.map((dept) => (
+                    <SelectItem key={dept} value={dept}>
+                      {dept === "it_operations" ? "IT Operations" : "IT QCS"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filters.location}
+                onValueChange={(value) => handleFilterChange("location", value)}
+                disabled={loadingOptions}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue
+                    placeholder={
+                      loadingOptions ? "Loading..." : "Filter by location"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {availableLocations?.locations.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location.charAt(0).toUpperCase() + location.slice(1)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
