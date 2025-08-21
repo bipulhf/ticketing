@@ -258,7 +258,7 @@ export function SystemOwnerUsersList() {
       const userData = {
         ...formData,
         role: formData.role as UserRole, // Type assertion since we've validated it's not empty
-        password: "123456!", // You might want to generate a random password or ask for it
+        password: "123456", // You might want to generate a random password or ask for it
       };
 
       const result = await createUser(userData);
