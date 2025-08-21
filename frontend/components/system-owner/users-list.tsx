@@ -258,7 +258,7 @@ export function SystemOwnerUsersList() {
       const userData = {
         ...formData,
         role: formData.role as UserRole, // Type assertion since we've validated it's not empty
-        password: "defaultPassword123!", // You might want to generate a random password or ask for it
+        password: "123456!", // You might want to generate a random password or ask for it
       };
 
       const result = await createUser(userData);
@@ -361,7 +361,7 @@ export function SystemOwnerUsersList() {
         toast.error(result.error);
       } else {
         toast.success(
-          `Password reset successfully for ${username}. New password: defaultPassword123!`
+          `Password reset successfully for ${username}. New password: 123456`
         );
       }
     } catch (err) {
@@ -534,10 +534,6 @@ export function SystemOwnerUsersList() {
                   className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
                 />
                 Refresh
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
               </Button>
 
               {/* Add User Modal */}

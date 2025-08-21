@@ -16,8 +16,12 @@ export const login = async ({ username, password }: LoginRequest) => {
     body: JSON.stringify({ username, password }),
   });
   if (response.success) {
-    cookieStore.set("token", response.data.token);
-    cookieStore.set("user", JSON.stringify(response.data.user));
+    cookieStore.set("token", response.data.token, {
+      maxAge: 60 * 60 * 24, // 1 calendar day
+    });
+    cookieStore.set("user", JSON.stringify(response.data.user), {
+      maxAge: 60 * 60 * 24, // 1 calendar day
+    });
     return response.data;
   }
   return { error: response.error.message };

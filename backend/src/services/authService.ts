@@ -19,6 +19,7 @@ export interface LoginResponse {
     role: UserRole;
     isActive: boolean;
     expiryDate: Date | null;
+    department: string | null;
   };
   token: string;
 }
@@ -50,6 +51,7 @@ export class AuthService {
         role: true,
         isActive: true,
         expiryDate: true,
+        department: true,
       },
     });
 
@@ -101,6 +103,7 @@ export class AuthService {
         role: user.role,
         isActive: user.isActive,
         expiryDate: user.expiryDate,
+        department: user.department,
       },
       token,
     };

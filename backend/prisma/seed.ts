@@ -17,7 +17,7 @@ async function main() {
   }
 
   // Create system owner account
-  const hashedPassword = await bcrypt.hash("admin123!", 12);
+  const hashedPassword = await bcrypt.hash("123456", 12);
 
   const systemOwner = await prisma.user.create({
     data: {
@@ -38,7 +38,7 @@ async function main() {
 
   console.log("🔑 Default credentials:");
   console.log("   Username: system_owner");
-  console.log("   Password: admin123!");
+  console.log("   Password: 123456");
   console.log("⚠️  Please change the default password after first login!");
 }
 

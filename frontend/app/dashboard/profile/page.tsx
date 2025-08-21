@@ -184,6 +184,16 @@ export default function ProfilePage() {
                 {formatRole(user.role)}
               </Badge>
             </div>
+            {user.department && user.role !== "user" && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Department
+                </p>
+                <p className="text-sm">
+                  {user.department.replace("_", " ").toUpperCase()}
+                </p>
+              </div>
+            )}
             <div>
               <p className="text-sm font-medium text-muted-foreground">
                 Status

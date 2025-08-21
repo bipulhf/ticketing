@@ -357,10 +357,10 @@ frontend/
    A default **System Owner** account will be created automatically:
 
    - **Username:** `system_owner`
-   - **Password:** `defaultPassword123!`
+   - **Password:** `123456`
 
 7. **User Account Policy**
 
    - Each user must register with a **unique username**.
-   - The default password for all new users is: `defaultPassword123!`
+   - The default password for all new users is: `123456`
    - All users are strongly encouraged to **change their password** after first login.

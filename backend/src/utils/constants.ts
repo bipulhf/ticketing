@@ -154,7 +154,7 @@ export const JWT_CONFIG = {
 } as const;
 
 export const PASSWORD_CONFIG = {
-  DEFAULT_PASSWORD: "defaultPassword123!",
+  DEFAULT_PASSWORD: "123456",
 } as const;
 
 export const RATE_LIMIT_CONFIG = {

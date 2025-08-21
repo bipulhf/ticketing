@@ -32,6 +32,7 @@ import {
   Ticket,
   Calendar as CalendarIcon,
   X,
+  Loader,
 } from "lucide-react";
 import { TicketCard } from "./ticket-card";
 import { Pagination } from "./pagination";
@@ -303,7 +304,11 @@ export default function TicketPage({
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-900">
-              {statusCounts.all}
+              {isLoading ? (
+                <Loader className="animate-spin" />
+              ) : (
+                statusCounts.all
+              )}
             </div>
             <p className="text-xs text-blue-600 mt-1">All tickets</p>
           </CardContent>
@@ -316,7 +321,11 @@ export default function TicketPage({
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-yellow-900">
-              {statusCounts.pending}
+              {isLoading ? (
+                <Loader className="animate-spin" />
+              ) : (
+                statusCounts.pending
+              )}
             </div>
             <p className="text-xs text-yellow-600 mt-1">Awaiting resolution</p>
           </CardContent>
@@ -329,7 +338,11 @@ export default function TicketPage({
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-900">
-              {statusCounts.resolved}
+              {isLoading ? (
+                <Loader className="animate-spin" />
+              ) : (
+                statusCounts.resolved
+              )}
             </div>
             <p className="text-xs text-green-600 mt-1">Successfully closed</p>
           </CardContent>
