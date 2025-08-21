@@ -478,6 +478,81 @@ export class UserService {
     };
   }
 
+  /**
+   * Build department and location filters based on user role and their assigned departments/locations
+   */
+  private static async buildDepartmentLocationFilter(userId: number): Promise<{
+    departmentFilter?: { in: ITDepartment[] };
+    locationFilter?: { in: Location[] };
+  }> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        role: true,
+        department: true,
+        locations: true,
+        userLocation: true,
+      },
+    });
+
+    if (!user) {
+      throw createError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    // System Owner sees everything - no department/location restrictions
+    if (user.role === "system_owner") {
+      return {};
+    }
+
+    let departmentFilter: { in: ITDepartment[] } | undefined;
+    let locationFilter: { in: Location[] } | undefined;
+
+    // Super Admin: filter by their department and locations
+    if (user.role === "super_admin") {
+      if (user.department) {
+        departmentFilter = { in: [user.department] };
+      }
+      if (user.locations && user.locations.length > 0) {
+        locationFilter = { in: user.locations };
+      }
+    }
+
+    // Admin: filter by their department and location
+    else if (user.role === "admin") {
+      if (user.department) {
+        departmentFilter = { in: [user.department] };
+      }
+      if (user.userLocation) {
+        locationFilter = { in: [user.userLocation] };
+      }
+    }
+
+    // IT Person: filter by their department and location
+    else if (user.role === "it_person") {
+      if (user.department) {
+        departmentFilter = { in: [user.department] };
+      }
+      if (user.userLocation) {
+        locationFilter = { in: [user.userLocation] };
+      }
+    }
+
+    // User: filter by their department and location
+    else if (user.role === "user") {
+      if (user.department) {
+        departmentFilter = { in: [user.department] };
+      }
+      if (user.userLocation) {
+        locationFilter = { in: [user.userLocation] };
+      }
+    }
+
+    return {
+      ...(departmentFilter && { departmentFilter }),
+      ...(locationFilter && { locationFilter }),
+    };
+  }
+
   static async getDashboardMetrics(
     userId: number,
     startDate?: string,
@@ -505,28 +580,43 @@ export class UserService {
       ],
     };
 
+    // Get department and location filters
+    const { departmentFilter, locationFilter } =
+      await this.buildDepartmentLocationFilter(userId);
+
+    // Build user where conditions
+    const userWhereConditions = {
+      isActive: true,
+      ...userFilter,
+      // Apply department and location filters to users
+      ...(departmentFilter && { department: departmentFilter }),
+      ...(locationFilter && {
+        OR: [
+          { locations: { hasSome: locationFilter.in } },
+          { userLocation: locationFilter },
+        ],
+      }),
+    };
+
     // Get user counts
     const [adminCount, itPersonCount, userCount, superAdminCount] =
       await Promise.all([
         prisma.user.count({
           where: {
             role: "admin",
-            isActive: true,
-            ...userFilter,
+            ...userWhereConditions,
           },
         }),
         prisma.user.count({
           where: {
             role: "it_person",
-            isActive: true,
-            ...userFilter,
+            ...userWhereConditions,
           },
         }),
         prisma.user.count({
           where: {
             role: "user",
-            isActive: true,
-            ...userFilter,
+            ...userWhereConditions,
           },
         }),
         user.role === "system_owner"
@@ -540,26 +630,30 @@ export class UserService {
           : 0,
       ]);
 
-    // Get ticket stats - tickets from users in the hierarchy
+    // Build ticket where conditions
+    const ticketWhereConditions = {
+      ...dateFilterCondition,
+      createdBy: userWhereConditions,
+      // Apply department and location filters to tickets
+      ...(departmentFilter && { department: departmentFilter }),
+      ...(locationFilter && { location: locationFilter }),
+    };
+
+    // Get ticket stats - tickets from users in the hierarchy with department/location filtering
     const [totalTickets, pendingTickets, solvedTickets] = await Promise.all([
       prisma.ticket.count({
-        where: {
-          ...dateFilterCondition,
-          createdBy: userFilter,
-        },
+        where: ticketWhereConditions,
       }),
       prisma.ticket.count({
         where: {
           status: "pending",
-          ...dateFilterCondition,
-          createdBy: userFilter,
+          ...ticketWhereConditions,
         },
       }),
       prisma.ticket.count({
         where: {
           status: "solved",
-          ...dateFilterCondition,
-          createdBy: userFilter,
+          ...ticketWhereConditions,
         },
       }),
     ]);

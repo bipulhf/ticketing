@@ -71,11 +71,12 @@ export class DashboardController {
       const dateFilter = buildDateFilter(startDate, endDate);
       const dateFilterCondition = buildPrismaDateFilter(dateFilter);
 
-      // Get Super Admin accounts with expiry information
+      // Get Super Admin accounts with expiry information (System Owner sees all Super Admins)
       const superAdmins = await prisma.user.findMany({
         where: {
           role: "super_admin",
           isActive: true,
+          systemOwnerId: userId,
         },
         select: {
           id: true,
@@ -85,6 +86,7 @@ export class DashboardController {
           accountLimit: true,
           expiryDate: true,
           locations: true,
+          department: true,
           createdAt: true,
           _count: {
             select: {

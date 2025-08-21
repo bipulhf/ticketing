@@ -196,8 +196,21 @@ export class UserController {
       const limitNum = parseInt(limit);
       const offset = (pageNum - 1) * limitNum;
 
-      // Build filter conditions to include all users in the hierarchy
-      const filters: any = {
+      // Get the current user's information to determine their role and management permissions
+      const currentUser = await prisma.user.findUnique({
+        where: { id: creatorId },
+        select: { role: true },
+      });
+
+      if (!currentUser) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+          success: false,
+          error: { message: "User not found" },
+        });
+      }
+
+      // Build base hierarchy filter
+      const hierarchyFilter: any = {
         OR: [
           { systemOwnerId: creatorId },
           { superAdminId: creatorId },
@@ -206,32 +219,72 @@ export class UserController {
         ],
       };
 
+      // Apply role-based restrictions based on management permissions
+      const roleRestrictions: any = [];
+
+      // System Owner can see all roles
+      if (currentUser.role === "system_owner") {
+        roleRestrictions.push(
+          { role: "super_admin" },
+          { role: "admin" },
+          { role: "it_person" },
+          { role: "user" }
+        );
+      }
+      // Super Admin can see admin, it_person, user
+      else if (currentUser.role === "super_admin") {
+        roleRestrictions.push(
+          { role: "admin" },
+          { role: "it_person" },
+          { role: "user" }
+        );
+      }
+      // Admin can see it_person, user
+      else if (currentUser.role === "admin") {
+        roleRestrictions.push({ role: "it_person" }, { role: "user" });
+      }
+      // IT Person can see user
+      else if (currentUser.role === "it_person") {
+        roleRestrictions.push({ role: "user" });
+      }
+      // User cannot see other users
+      else if (currentUser.role === "user") {
+        roleRestrictions.push(
+          { role: "user" } // Only themselves
+        );
+        // For users, restrict to only see themselves
+        hierarchyFilter.OR = [{ id: creatorId }];
+      }
+
+      const filters: any = {
+        AND: [hierarchyFilter, { OR: roleRestrictions }],
+      };
+
       if (role) {
-        filters.role = role;
+        filters.AND.push({ role });
       }
 
       if (isActive !== undefined) {
-        filters.isActive = isActive === "true";
+        filters.AND.push({ isActive: isActive === "true" });
       }
 
       if (department && department !== "all") {
-        filters.department = department;
+        filters.AND.push({ department });
       }
 
       if (location && location !== "all") {
-        filters.userLocation = location;
+        filters.AND.push({ userLocation: location });
       }
 
       if (search) {
-        // Combine search with the hierarchy filter
+        // Add search filter to the existing AND conditions
         const searchFilter = {
           OR: [
             { username: { contains: search, mode: "insensitive" } },
             { email: { contains: search, mode: "insensitive" } },
           ],
         };
-        filters.AND = [{ OR: filters.OR }, searchFilter];
-        delete filters.OR;
+        filters.AND.push(searchFilter);
       }
 
       const [users, totalCount] = await Promise.all([

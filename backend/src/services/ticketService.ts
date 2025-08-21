@@ -453,7 +453,10 @@ export class TicketService {
     if (user.role === "system_owner") {
       // System owner can see all tickets
     } else if (user.role === "super_admin") {
-      // Super admin can see tickets from their assigned locations
+      // Super admin can see tickets from their assigned department and locations
+      if (user.department) {
+        whereClause.department = user.department;
+      }
       if (user.locations && user.locations.length > 0) {
         whereClause.location = { in: user.locations };
       }
