@@ -298,16 +298,11 @@ export function CreateTicketModal({
                       type="text"
                       inputMode="numeric"
                       pattern="\d{11}"
-                      maxLength={11}
-                      minLength={11}
                       placeholder="e.g., 01717171717"
                       {...field}
                       required
                       onChange={(e) => {
-                        // Only allow digits and max 11 characters
-                        const value = e.target.value
-                          .replace(/\D/g, "")
-                          .slice(0, 11);
+                        const value = e.target.value.replace(/\D/g, "");
                         field.onChange(value);
                       }}
                       value={field.value || ""}

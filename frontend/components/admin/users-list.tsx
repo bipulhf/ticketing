@@ -599,6 +599,13 @@ export function AdminUsersList() {
                           <Badge variant={getRoleBadgeVariant(user.role)}>
                             {getRoleDisplayName(user.role)}
                           </Badge>
+                          {user.role !== "user" && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {user.department === "it_operations"
+                                ? "IT Operations"
+                                : "IT QCS"}
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

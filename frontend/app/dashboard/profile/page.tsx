@@ -42,7 +42,6 @@ export default function ProfilePage() {
   const [profileForm, setProfileForm] = useState({
     username: "",
     email: "",
-    location: "",
   });
 
   // Password form state
@@ -67,7 +66,6 @@ export default function ProfilePage() {
           setProfileForm({
             username: userData.username || "",
             email: userData.email || "",
-            location: userData.location || "",
           });
         } catch (error) {
           console.error("Error parsing user cookie:", error);
@@ -184,6 +182,21 @@ export default function ProfilePage() {
                 {formatRole(user.role)}
               </Badge>
             </div>
+            {((user.locations && user.locations.length > 0) ||
+              user.userLocation) && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Locations
+                </p>
+                <p className="text-sm">
+                  {user.locations && user.locations.length > 1
+                    ? user.locations
+                        .map((location) => location.toUpperCase())
+                        .join(", ")
+                    : user.userLocation?.toUpperCase() || "N/A"}
+                </p>
+              </div>
+            )}
             {user.department && user.role !== "user" && (
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
@@ -293,7 +306,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -310,7 +323,7 @@ export default function ProfilePage() {
                       className="pl-10"
                     />
                   </div>
-                </div>
+                </div> */}
 
                 <Button
                   type="submit"

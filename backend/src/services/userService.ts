@@ -633,7 +633,7 @@ export class UserService {
     // Build ticket where conditions
     const ticketWhereConditions = {
       ...dateFilterCondition,
-      createdBy: userWhereConditions,
+      // createdBy: userWhereConditions,
       // Apply department and location filters to tickets
       ...(departmentFilter && { department: departmentFilter }),
       ...(locationFilter && { location: locationFilter }),

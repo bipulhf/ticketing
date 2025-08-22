@@ -300,6 +300,7 @@ export class UserController {
             accountLimit: true,
             expiryDate: true,
             locations: true,
+            department: true,
             userLocation: true,
             createdAt: true,
             updatedAt: true,
@@ -374,7 +375,7 @@ export class UserController {
 
   static updateUser = asyncHandler(
     async (req: AuthenticatedRequest, res: Response) => {
-      const id = parseInt(req.params.id || "0");
+      const id = req.user?.id || 0;
       const updaterId = req.user?.id || 0;
 
       if (!updaterId) {

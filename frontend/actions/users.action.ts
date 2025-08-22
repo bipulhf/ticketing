@@ -173,7 +173,6 @@ export const deleteUser = async (userId: string) => {
 export const updateSelfProfile = async (userData: {
   username?: string;
   email?: string;
-  userLocation?: Location;
 }) => {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;

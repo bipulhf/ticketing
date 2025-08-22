@@ -1,4 +1,4 @@
-import { User, UserRole } from "@prisma/client";
+import { Location, User, UserRole } from "@prisma/client";
 import { prisma } from "../config/prisma";
 import { hashPassword, comparePassword } from "../utils/password";
 import { generateToken } from "../utils/jwt";
@@ -20,6 +20,8 @@ export interface LoginResponse {
     isActive: boolean;
     expiryDate: Date | null;
     department: string | null;
+    locations: Location[];
+    userLocation: Location | null;
   };
   token: string;
 }
@@ -52,6 +54,8 @@ export class AuthService {
         isActive: true,
         expiryDate: true,
         department: true,
+        locations: true,
+        userLocation: true,
       },
     });
 
@@ -104,6 +108,8 @@ export class AuthService {
         isActive: user.isActive,
         expiryDate: user.expiryDate,
         department: user.department,
+        locations: user.locations,
+        userLocation: user.userLocation,
       },
       token,
     };
