@@ -437,12 +437,23 @@ export class TicketService {
 
     // Add search filter
     if (search) {
-      whereClause.OR = [
+      const orConditions: any[] = [
         { description: { contains: search, mode: "insensitive" } },
-        { device_name: { contains: search, mode: "insensitive" } },
         { ip_address: { contains: search, mode: "insensitive" } },
         { ip_number: { contains: search, mode: "insensitive" } },
       ];
+
+      const searchId = parseInt(search);
+      if (!isNaN(searchId)) {
+        orConditions.push({ id: { equals: searchId } });
+      }
+
+      whereClause.OR = orConditions;
+    }
+
+    // Add department filter
+    if (department) {
+      whereClause.department = department;
     }
 
     // Add location filter

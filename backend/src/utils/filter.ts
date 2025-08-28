@@ -49,33 +49,17 @@ export const buildPrismaDateFilter = (dateFilter?: DateFilter) => {
   }
 
   const { startDate, endDate } = dateFilter;
-
-  if (startDate && endDate) {
-    return {
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
-      },
-    };
-  }
+  const filter: any = {};
 
   if (startDate) {
-    return {
-      createdAt: {
-        gte: startDate,
-      },
-    };
+    filter.gte = startDate;
   }
 
   if (endDate) {
-    return {
-      createdAt: {
-        lte: endDate,
-      },
-    };
+    filter.lte = endDate;
   }
 
-  return {};
+  return filter;
 };
 
 export const buildPaginationFilter = (page: number = 1, limit: number = 10) => {

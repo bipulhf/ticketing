@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Award, TrendingUp, Ticket } from "lucide-react";
 import Link from "next/link";
 import { LoginForm } from "@/components/login/login-form";
+import content from "@/content/static.json";
 
 export default function LoginPage() {
+  const { loginPage, landingPage } = content;
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Background Elements */}
@@ -25,21 +27,20 @@ export default function LoginPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">
-                  HelpDesk Pro
+                  {landingPage.nav.brand}
                 </h1>
               </div>
             </div>
 
             <div className="space-y-6">
               <h2 className="text-4xl font-bold text-slate-800 leading-tight">
-                Accelerate Your
+                {loginPage.title[0]}
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent block">
-                  IT Support Journey
+                  {loginPage.title[1]}
                 </span>
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed">
-                Streamline IT support, manage tickets, and collaborate with
-                peers in our comprehensive IT support platform.
+                {loginPage.subtitle}
               </p>
             </div>
 
@@ -49,21 +50,27 @@ export default function LoginPage() {
                 <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
                   <BookOpen className="h-6 w-6 text-blue-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-slate-800">50+</div>
-                  <div className="text-xs text-slate-600">Active Tickets</div>
+                  <div className="text-xs text-slate-600">
+                    {loginPage.stats.activeTickets}
+                  </div>
                 </div>
               </div>
               <div className="text-center">
                 <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
                   <Award className="h-6 w-6 text-indigo-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-slate-800">200+</div>
-                  <div className="text-xs text-slate-600">Total Tickets</div>
+                  <div className="text-xs text-slate-600">
+                    {loginPage.stats.totalTickets}
+                  </div>
                 </div>
               </div>
               <div className="text-center">
                 <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 shadow-sm">
                   <TrendingUp className="h-6 w-6 text-purple-600 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-slate-800">500+</div>
-                  <div className="text-xs text-slate-600">Users</div>
+                  <div className="text-xs text-slate-600">
+                    {loginPage.stats.users}
+                  </div>
                 </div>
               </div>
             </div>
@@ -71,7 +78,7 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="text-sm text-slate-500">
-            <p>© 2025 HelpDesk Pro. All rights reserved.</p>
+            <p>{loginPage.copyright}</p>
           </div>
         </div>
 
@@ -86,14 +93,14 @@ export default function LoginPage() {
                 </div>
               </div>
               <h1 className="text-2xl font-bold text-slate-800">
-                HelpDesk Pro
+                {landingPage.nav.brand}
               </h1>
             </div>
 
             {/* Main Login Card */}
             <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="text-center pb-4">
-                <p className="text-slate-600">Sign in to continue</p>
+                <p className="text-slate-600">{loginPage.form.title}</p>
               </CardHeader>
 
               <CardContent className="">
@@ -105,7 +112,7 @@ export default function LoginPage() {
                     asChild
                     className="text-slate-600 hover:text-slate-800"
                   >
-                    <Link href="/">← Back to Home</Link>
+                    <Link href="/">{loginPage.form.backToHome}</Link>
                   </Button>
                 </div>
               </CardContent>

@@ -22,69 +22,63 @@ import {
   Menu,
 } from "lucide-react";
 import Link from "next/link";
+import content from "@/content/static.json";
 
 export default function LandingPage() {
+  const { landingPage } = content;
   const features = [
     {
       icon: Users,
-      title: "User Roles",
-      description:
-        "Comprehensive role-based access control for different team members",
+      title: landingPage.features.items[0].title,
+      description: landingPage.features.items[0].description,
     },
     {
       icon: BarChart3,
-      title: "Real-time Dashboards",
-      description:
-        "Monitor ticket status, performance metrics, and team productivity",
+      title: landingPage.features.items[1].title,
+      description: landingPage.features.items[1].description,
     },
     {
       icon: Ticket,
-      title: "Ticket Management",
-      description:
-        "Streamlined ticket creation, assignment, and resolution tracking",
+      title: landingPage.features.items[2].title,
+      description: landingPage.features.items[2].description,
     },
     {
       icon: Clock,
-      title: "Expiry Control",
-      description: "Automated ticket expiry and escalation management",
+      title: landingPage.features.items[3].title,
+      description: landingPage.features.items[3].description,
     },
     {
       icon: Archive,
-      title: "Archiving",
-      description: "Secure ticket archiving and historical data management",
+      title: landingPage.features.items[4].title,
+      description: landingPage.features.items[4].description,
     },
   ];
 
   const roles = [
     {
       icon: Shield,
-      title: "System Owner",
-      description:
-        "Complete system oversight with full administrative privileges and strategic control",
+      title: landingPage.roles.items[0].title,
+      description: landingPage.roles.items[0].description,
     },
     {
       icon: Settings,
-      title: "Super Admin",
-      description:
-        "Advanced configuration management and user administration capabilities",
+      title: landingPage.roles.items[1].title,
+      description: landingPage.roles.items[1].description,
     },
     {
       icon: UserCheck,
-      title: "Admin",
-      description:
-        "Department-level management with ticket oversight and team coordination",
+      title: landingPage.roles.items[2].title,
+      description: landingPage.roles.items[2].description,
     },
     {
       icon: Wrench,
-      title: "IT Person",
-      description:
-        "Technical ticket resolution with specialized tools and escalation rights",
+      title: landingPage.roles.items[3].title,
+      description: landingPage.roles.items[3].description,
     },
     {
       icon: User,
-      title: "User",
-      description:
-        "Ticket submission and tracking with self-service portal access",
+      title: landingPage.roles.items[4].title,
+      description: landingPage.roles.items[4].description,
     },
   ];
 
@@ -99,7 +93,7 @@ export default function LandingPage() {
                 <Ticket className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">
-                HelpDesk Pro
+                {landingPage.nav.brand}
               </span>
             </div>
 
@@ -108,22 +102,22 @@ export default function LandingPage() {
                 href="#features"
                 className="text-gray-600 hover:text-primary transition-colors"
               >
-                Features
+                {landingPage.nav.features}
               </Link>
               <Link
                 href="#roles"
                 className="text-gray-600 hover:text-primary transition-colors"
               >
-                Roles
+                {landingPage.nav.roles}
               </Link>
               <Link
                 href="#testimonials"
                 className="text-gray-600 hover:text-primary transition-colors"
               >
-                Testimonials
+                {landingPage.nav.testimonials}
               </Link>
               <Link href="/login">
-                <Button size="sm">Get Started</Button>
+                <Button size="sm">{landingPage.nav.getStarted}</Button>
               </Link>
             </div>
 
@@ -142,25 +136,23 @@ export default function LandingPage() {
               variant="secondary"
               className="mb-6 bg-blue-100 text-primary hover:bg-blue-100"
             >
-              Trusted by 500+ IT Teams
+              {landingPage.hero.badge}
             </Badge>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Streamline Your <br />
+              {landingPage.hero.title[0]} <br />
               <span className="bg-gradient-to-r from-primary to-blue-700 bg-clip-text text-transparent">
-                IT Support Workflow
+                {landingPage.hero.title[1]}
               </span>
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              A role-based ticketing system built for efficiency and control.
-              Empower your IT team with intelligent automation and comprehensive
-              oversight.
+              {landingPage.hero.subtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/login">
-                <Button size="lg">Get Started</Button>
+                <Button size="lg">{landingPage.hero.getStarted}</Button>
               </Link>
             </div>
           </div>
@@ -172,11 +164,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Powerful Features for Modern IT Teams
+              {landingPage.features.title}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Everything you need to manage, track, and resolve IT tickets
-              efficiently
+              {landingPage.features.subtitle}
             </p>
           </div>
 
@@ -213,10 +204,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Role-Based Access Control
+              {landingPage.roles.title}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Tailored permissions and capabilities for every team member
+              {landingPage.roles.subtitle}
             </p>
           </div>
 
@@ -262,19 +253,22 @@ export default function LandingPage() {
         </div>
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
           <h2 className="text-4xl sm:text-5xl font-extrabold text-primary mb-6 drop-shadow-md">
-            Ready to{" "}
+            {landingPage.cta.title[0]}{" "}
             <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
-              Transform
+              {landingPage.cta.title[1]}
             </span>{" "}
-            Your IT Support?
+            {landingPage.cta.title[2]}
           </h2>
           <p className="text-xl sm:text-2xl text-blue-800 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
-            Join{" "}
+            {landingPage.cta.subtitle[0]}{" "}
             <span className="font-bold text-blue-600">
-              hundreds of IT teams
+              {landingPage.cta.subtitle[1]}
             </span>{" "}
-            who have streamlined their workflow with{" "}
-            <span className="font-semibold text-blue-700">HelpDesk Pro</span>.
+            {landingPage.cta.subtitle[2]}{" "}
+            <span className="font-semibold text-blue-700">
+              {landingPage.cta.subtitle[3]}
+            </span>
+            {landingPage.cta.subtitle[4]}
           </p>
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
             <Button
@@ -282,7 +276,7 @@ export default function LandingPage() {
               variant="secondary"
               className="shadow-lg hover:shadow-xl"
             >
-              Get Started
+              {landingPage.cta.getStarted}
             </Button>
           </div>
         </div>
@@ -297,71 +291,75 @@ export default function LandingPage() {
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <Ticket className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">HelpDesk Pro</span>
+                <span className="text-xl font-bold">
+                  {landingPage.footer.brand}
+                </span>
               </div>
               <p className="text-gray-400 mb-4 max-w-md">
-                Streamline your IT support workflow with our comprehensive
-                ticketing system designed for modern teams.
+                {landingPage.footer.description}
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">Company</h3>
+              <h3 className="font-semibold mb-4">
+                {landingPage.footer.company.title}
+              </h3>
               <ul className="space-y-2 text-gray-400">
-                <li>
+                {/* <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    About
+                    {landingPage.footer.company.about}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Contact
+                    {landingPage.footer.company.contact}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Careers
+                    {landingPage.footer.company.careers}
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Blog
+                    {landingPage.footer.company.blog}
                   </Link>
                 </li>
               </ul>
             </div>
 
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
+            {/* <div>
+              <h3 className="font-semibold mb-4">
+                {landingPage.footer.legal.title}
+              </h3>
               <ul className="space-y-2 text-gray-400">
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Privacy
+                    {landingPage.footer.legal.privacy}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Terms
+                    {landingPage.footer.legal.terms}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Security
+                    {landingPage.footer.legal.security}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="hover:text-white transition-colors">
-                    Support
+                    {landingPage.footer.legal.support}
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
             <p>
-              &copy; {new Date().getFullYear()} HelpDesk Pro. All rights
-              reserved.
+              &copy; {new Date().getFullYear()} {landingPage.footer.copyright}
             </p>
           </div>
         </div>

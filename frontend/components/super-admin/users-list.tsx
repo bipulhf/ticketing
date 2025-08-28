@@ -104,6 +104,7 @@ export function SuperAdminUsersList() {
     page: 1,
     limit: 10,
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Modal state management
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -147,7 +148,15 @@ export function SuperAdminUsersList() {
 
     setData(result);
     setLoading(false);
-  }, [filters]);
+  }, [
+    filters.search,
+    filters.role,
+    filters.isActive,
+    filters.department,
+    filters.location,
+    filters.page,
+    filters.limit,
+  ]);
 
   const fetchUsers = useCallback(() => {
     fetchMyUsers();
@@ -184,9 +193,15 @@ export function SuperAdminUsersList() {
     fetchAvailableOptions();
   }, []);
 
-  const handleSearch = (value: string) => {
-    setFilters((prev) => ({ ...prev, search: value, page: 1 }));
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, search: searchQuery, page: 1 }));
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
 
   const handleFilterChange = (key: keyof Filters, value: string | number) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
@@ -262,7 +277,8 @@ export function SuperAdminUsersList() {
   };
 
   const handleDeleteUser = async (userId: string): Promise<boolean> => {
-    if (!confirm("Are you sure you want to delete this user?")) return false;
+    if (!confirm("Are you sure you want to Deactivate this user?"))
+      return false;
 
     setIsSubmitting(true);
     try {
@@ -494,8 +510,8 @@ export function SuperAdminUsersList() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search users by name, email, department, or location..."
-                  value={filters.search}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -861,11 +877,11 @@ export function SuperAdminUsersList() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-red-600"
+                                className="text-red-600 font-semibold"
                                 onClick={() => handleDeleteUser(user.id)}
                               >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete User
+                                <XCircle className="mr-2 h-4 w-4" />
+                                Deactivate User
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

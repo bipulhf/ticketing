@@ -209,7 +209,7 @@ export class UserController {
         });
       }
 
-      // Build base hierarchy filter
+      // Build base hierarchy filter for non-user roles
       const hierarchyFilter: any = {
         OR: [
           { systemOwnerId: creatorId },
@@ -253,11 +253,110 @@ export class UserController {
           { role: "user" } // Only themselves
         );
         // For users, restrict to only see themselves
-        hierarchyFilter.OR = [{ id: creatorId }];
+        const filters: any = {
+          AND: [{ id: creatorId }, { OR: roleRestrictions }],
+        };
+
+        // Apply other filters for user role (simplified logic)
+        if (role) {
+          filters.AND.push({ role });
+        }
+        if (isActive !== undefined) {
+          filters.AND.push({ isActive: isActive === "true" });
+        }
+        if (search) {
+          const searchFilter = {
+            OR: [
+              { username: { contains: search, mode: "insensitive" } },
+              { email: { contains: search, mode: "insensitive" } },
+            ],
+          };
+          filters.AND.push(searchFilter);
+        }
+
+        const [users, totalCount] = await Promise.all([
+          prisma.user.findMany({
+            where: filters,
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              role: true,
+              isActive: true,
+              businessType: true,
+              accountLimit: true,
+              expiryDate: true,
+              locations: true,
+              department: true,
+              userLocation: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            skip: offset,
+            take: limitNum,
+          }),
+          prisma.user.count({ where: filters }),
+        ]);
+
+        const totalPages = Math.ceil(totalCount / limitNum);
+
+        res.status(HTTP_STATUS.OK).json({
+          success: true,
+          users,
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total: totalCount,
+            totalPages,
+            hasNextPage: pageNum < totalPages,
+            hasPrevPage: pageNum > 1,
+          },
+          filters: {
+            role: role || null,
+            search: search || null,
+            isActive: isActive || null,
+            department: department || null,
+            location: location || null,
+          },
+        });
+        return;
       }
 
+      // Build authorization filter: hierarchy applies to non-user roles only
+      const authorizationConditions = [];
+
+      // Non-user roles with hierarchy restrictions
+      const nonUserRoles = roleRestrictions.filter(
+        (r: any) => r.role !== "user"
+      );
+      if (nonUserRoles.length > 0) {
+        authorizationConditions.push({
+          role: { not: "user" },
+          AND: [hierarchyFilter, { OR: nonUserRoles }],
+        });
+      }
+
+      // User role without hierarchy restrictions (visible to all authorized)
+      if (roleRestrictions.some((r: any) => r.role === "user")) {
+        authorizationConditions.push({ role: "user" });
+      }
+
+      // Ensure we have valid authorization conditions
+      if (authorizationConditions.length === 0) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
+          success: false,
+          error: { message: "No authorized access to users" },
+        });
+      }
+
+      // Start with authorization filter
       const filters: any = {
-        AND: [hierarchyFilter, { OR: roleRestrictions }],
+        AND: [
+          {
+            OR: authorizationConditions,
+          },
+        ],
       };
 
       if (role) {
@@ -268,12 +367,30 @@ export class UserController {
         filters.AND.push({ isActive: isActive === "true" });
       }
 
+      // Handle department and location filters with special logic for 'user' role
+      const locationAndDepartmentConditions = [];
       if (department && department !== "all") {
-        filters.AND.push({ department });
+        locationAndDepartmentConditions.push({ department });
       }
 
       if (location && location !== "all") {
-        filters.AND.push({ userLocation: location });
+        locationAndDepartmentConditions.push({
+          OR: [{ userLocation: location }, { locations: { has: location } }],
+        });
+      }
+
+      if (locationAndDepartmentConditions.length > 0) {
+        filters.AND.push({
+          OR: [
+            {
+              role: { not: "user" },
+              AND: locationAndDepartmentConditions,
+            },
+            {
+              role: "user",
+            },
+          ],
+        });
       }
 
       if (search) {

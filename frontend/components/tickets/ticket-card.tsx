@@ -125,7 +125,7 @@ export function TicketCard({
               </Button>
             </div>
           )}
-          {userType === "it_person" && ticket.status === "pending" && (
+          {userType !== "user" && ticket.status === "pending" && (
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"

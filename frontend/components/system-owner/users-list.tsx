@@ -115,6 +115,7 @@ export function SystemOwnerUsersList() {
     page: 1,
     limit: 10,
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Modal state management
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -158,7 +159,15 @@ export function SystemOwnerUsersList() {
 
     setData(result);
     setLoading(false);
-  }, [filters]);
+  }, [
+    filters.search,
+    filters.role,
+    filters.isActive,
+    filters.department,
+    filters.location,
+    filters.page,
+    filters.limit,
+  ]);
 
   const fetchAllUsersByType = useCallback(async () => {
     setLoadingAllUsers(true);
@@ -190,6 +199,13 @@ export function SystemOwnerUsersList() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, search: searchQuery, page: 1 }));
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   // Fetch available locations and departments
   const fetchAvailableOptions = useCallback(async () => {
@@ -230,10 +246,6 @@ export function SystemOwnerUsersList() {
       limit: 10,
     });
   }, [viewMode]);
-
-  const handleSearch = (value: string) => {
-    setFilters((prev) => ({ ...prev, search: value, page: 1 }));
-  };
 
   const handleFilterChange = (key: keyof Filters, value: string | number) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
@@ -309,7 +321,8 @@ export function SystemOwnerUsersList() {
   };
 
   const handleDeleteUser = async (userId: string): Promise<boolean> => {
-    if (!confirm("Are you sure you want to delete this user?")) return false;
+    if (!confirm("Are you sure you want to Deactivate this user?"))
+      return false;
 
     setIsSubmitting(true);
     try {
@@ -585,8 +598,8 @@ export function SystemOwnerUsersList() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search users by name, email, department, or location..."
-                  value={filters.search}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -974,11 +987,11 @@ export function SystemOwnerUsersList() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-red-600"
+                                className="text-red-600 font-semibold"
                                 onClick={() => handleDeleteUser(user.id)}
                               >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete User
+                                <XCircle className="mr-2 h-4 w-4" />
+                                Deactivate User
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

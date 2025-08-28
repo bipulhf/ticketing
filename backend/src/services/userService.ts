@@ -570,8 +570,8 @@ export class UserService {
     const dateFilter = buildDateFilter(startDate, endDate);
     const dateFilterCondition = buildPrismaDateFilter(dateFilter);
 
-    // Build user filter based on hierarchy fields
-    const userFilter = {
+    // Build hierarchy filter for non-user roles
+    const hierarchyFilter = {
       OR: [
         { systemOwnerId: userId },
         { superAdminId: userId },
@@ -584,48 +584,55 @@ export class UserService {
     const { departmentFilter, locationFilter } =
       await this.buildDepartmentLocationFilter(userId);
 
-    // Build user where conditions
-    const userWhereConditions = {
+    // Build where conditions for user role (no hierarchy, department, or location filters)
+    const userRoleWhereConditions = {
       isActive: true,
-      ...userFilter,
-      // Apply department and location filters to users
-      ...(departmentFilter && { department: departmentFilter }),
-      ...(locationFilter && {
-        OR: [
-          { locations: { hasSome: locationFilter.in } },
-          { userLocation: locationFilter },
-        ],
-      }),
+      role: "user" as UserRole,
     };
 
-    // Get user counts
+    // Helper function to build role-specific where conditions
+    const buildRoleWhereConditions = (targetRole: UserRole) => {
+      return {
+        role: targetRole,
+        isActive: true,
+        OR: [
+          // Include users in hierarchy with department/location filters
+          {
+            AND: [
+              hierarchyFilter,
+              ...(departmentFilter ? [{ department: departmentFilter }] : []),
+              ...(locationFilter
+                ? [
+                    {
+                      OR: [
+                        { locations: { hasSome: locationFilter.in } },
+                        { userLocation: locationFilter },
+                      ],
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ],
+      };
+    };
+
+    // Get user counts with proper inclusion of current user
     const [adminCount, itPersonCount, userCount, superAdminCount] =
       await Promise.all([
         prisma.user.count({
-          where: {
-            role: "admin",
-            ...userWhereConditions,
-          },
+          where: buildRoleWhereConditions("admin"),
         }),
         prisma.user.count({
-          where: {
-            role: "it_person",
-            ...userWhereConditions,
-          },
+          where: buildRoleWhereConditions("it_person"),
         }),
+        // Users with "user" role are visible to all authorized administrators
         prisma.user.count({
-          where: {
-            role: "user",
-            ...userWhereConditions,
-          },
+          where: userRoleWhereConditions,
         }),
         user.role === "system_owner"
           ? prisma.user.count({
-              where: {
-                role: "super_admin",
-                isActive: true,
-                systemOwnerId: userId,
-              },
+              where: buildRoleWhereConditions("super_admin"),
             })
           : 0,
       ]);

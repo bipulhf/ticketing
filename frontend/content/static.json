@@ -1,0 +1,113 @@
+{
+  "landingPage": {
+    "nav": {
+      "brand": "IT HelpDesk Pro",
+      "features": "Features",
+      "roles": "Roles",
+      "testimonials": "Testimonials",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "badge": "Trusted by 500+ IT Teams",
+      "title": ["Streamline Your", "IT Support Workflow"],
+      "subtitle": "A role-based ticketing system built for efficiency and control. Empower your IT team with intelligent automation and comprehensive oversight.",
+      "getStarted": "Get Started"
+    },
+    "features": {
+      "title": "Powerful Features for Modern IT Teams",
+      "subtitle": "Everything you need to manage, track, and resolve IT tickets efficiently",
+      "items": [
+        {
+          "title": "User Roles",
+          "description": "Comprehensive role-based access control for different team members"
+        },
+        {
+          "title": "Real-time Dashboards",
+          "description": "Monitor ticket status, performance metrics, and team productivity"
+        },
+        {
+          "title": "Ticket Management",
+          "description": "Streamlined ticket creation, assignment, and resolution tracking"
+        },
+        {
+          "title": "Expiry Control",
+          "description": "Automated ticket expiry and escalation management"
+        },
+        {
+          "title": "Archiving",
+          "description": "Secure ticket archiving and historical data management"
+        }
+      ]
+    },
+    "roles": {
+      "title": "Role-Based Access Control",
+      "subtitle": "Tailored permissions and capabilities for every team member",
+      "items": [
+        {
+          "title": "System Owner",
+          "description": "Complete system oversight with full administrative privileges and strategic control"
+        },
+        {
+          "title": "Super Admin",
+          "description": "Advanced configuration management and user administration capabilities"
+        },
+        {
+          "title": "Admin",
+          "description": "Department-level management with ticket oversight and team coordination"
+        },
+        {
+          "title": "IT Person",
+          "description": "Technical ticket resolution with specialized tools and escalation rights"
+        },
+        {
+          "title": "User",
+          "description": "Ticket submission and tracking with self-service portal access"
+        }
+      ]
+    },
+    "cta": {
+      "title": ["Ready to", "Transform", "Your IT Support?"],
+      "subtitle": [
+        "Join",
+        "hundreds of IT teams",
+        "who have streamlined their workflow with",
+        "IT HelpDesk Pro",
+        "."
+      ],
+      "getStarted": "Get Started"
+    },
+    "footer": {
+      "brand": "IT HelpDesk Pro",
+      "description": "Streamline your IT support workflow with our comprehensive ticketing system designed for modern teams.",
+      "company": {
+        "title": "Company",
+        "about": "About",
+        "contact": "Contact",
+        "careers": "Careers",
+        "blog": "Blog"
+      },
+      "legal": {
+        "title": "Legal",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "security": "Security",
+        "support": "Support"
+      },
+      "copyright": "IT HelpDesk Pro. All rights reserved."
+    }
+  },
+  "loginPage": {
+    "title": ["Accelerate Your", "IT Support Journey"],
+    "subtitle": "Streamline IT support, manage tickets, and collaborate with peers in our comprehensive IT support platform.",
+    "stats": {
+      "activeTickets": "Active Tickets",
+      "totalTickets": "Total Tickets",
+      "users": "Users"
+    },
+    "copyright": "© 2025 IT HelpDesk Pro. All rights reserved.",
+    "form": {
+      "title": "Sign in to continue",
+      "backToHome": "← Back to Home"
+    }
+  }
+}
