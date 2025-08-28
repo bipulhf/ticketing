@@ -74,6 +74,10 @@ export interface Ticket {
   user_department?: UserDepartment; // Optional: User's department for display/filtering
   createdById: string;
   createdBy: User;
+  // Solver tracking - who solved/closed the ticket
+  solvedById?: string;
+  solvedBy?: User;
+  solvedAt?: string; // ISO date-time string when the ticket was solved
   attachments: Attachment[];
   createdAt: string;
   updatedAt: string;

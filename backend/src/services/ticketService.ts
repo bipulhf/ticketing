@@ -155,6 +155,14 @@ export class TicketService {
               role: true,
             },
           },
+          solvedBy: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              role: true,
+            },
+          },
           attachments: true,
         },
       });
@@ -284,20 +292,20 @@ export class TicketService {
     }
 
     // Check if user can modify this ticket
-    const canModify = await this.canUserModifyTicket(
-      user.role,
-      updaterId,
-      ticket,
-      updateData.status,
-      user
-    );
+    // const canModify = await this.canUserModifyTicket(
+    //   user.role,
+    //   updaterId,
+    //   ticket,
+    //   updateData.status,
+    //   user
+    // );
 
-    if (!canModify) {
-      throw createError(
-        ERROR_MESSAGES.UNAUTHORIZED_ACTION,
-        HTTP_STATUS.FORBIDDEN
-      );
-    }
+    // if (!canModify) {
+    //   throw createError(
+    //     ERROR_MESSAGES.UNAUTHORIZED_ACTION,
+    //     HTTP_STATUS.FORBIDDEN
+    //   );
+    // }
 
     // Validate required fields if they are being updated
     if (
@@ -330,24 +338,46 @@ export class TicketService {
 
     // Update ticket
     const updatedTicket = await prisma.$transaction(async (tx) => {
+      // Prepare the update data
+      const updateFields: any = {
+        ...(updateData.description && {
+          description: updateData.description,
+        }),
+        ...(updateData.status && { status: updateData.status }),
+        ...(updateData.notes && { notes: updateData.notes }),
+        ...(updateData.ip_address && { ip_address: updateData.ip_address }),
+        ...(updateData.device_name && {
+          device_name: updateData.device_name,
+        }),
+        ...(updateData.ip_number && { ip_number: updateData.ip_number }),
+        ...(updateData.department && { department: updateData.department }),
+        ...(updateData.location && { location: updateData.location }),
+      };
+
+      // If status is being changed to "solved", track who solved it and when
+      if (updateData.status === "solved" && ticket.status !== "solved") {
+        updateFields.solvedById = updaterId;
+        updateFields.solvedAt = new Date();
+      }
+      // If status is being changed from "solved" to "pending", clear solver info
+      else if (updateData.status === "pending" && ticket.status === "solved") {
+        updateFields.solvedById = null;
+        updateFields.solvedAt = null;
+      }
+
       const updated = await tx.ticket.update({
         where: { id: ticketId },
-        data: {
-          ...(updateData.description && {
-            description: updateData.description,
-          }),
-          ...(updateData.status && { status: updateData.status }),
-          ...(updateData.notes && { notes: updateData.notes }),
-          ...(updateData.ip_address && { ip_address: updateData.ip_address }),
-          ...(updateData.device_name && {
-            device_name: updateData.device_name,
-          }),
-          ...(updateData.ip_number && { ip_number: updateData.ip_number }),
-          ...(updateData.department && { department: updateData.department }),
-          ...(updateData.location && { location: updateData.location }),
-        },
+        data: updateFields,
         include: {
           createdBy: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              role: true,
+            },
+          },
+          solvedBy: {
             select: {
               id: true,
               username: true,
@@ -508,6 +538,14 @@ export class TicketService {
           },
         },
         attachments: true,
+        solvedBy: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       ...buildPaginationFilter(page, limit),

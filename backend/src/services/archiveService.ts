@@ -38,6 +38,9 @@ export class ArchiveService {
           location: ticket.location,
           user_department: ticket.user_department,
           createdById: ticket.createdById,
+          // Include solver tracking fields
+          solvedById: ticket.solvedById,
+          solvedAt: ticket.solvedAt,
           createdAt: ticket.createdAt,
           updatedAt: ticket.updatedAt,
         },

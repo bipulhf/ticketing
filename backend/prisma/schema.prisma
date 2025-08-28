@@ -98,6 +98,7 @@ model User {
   
   // Tickets
   createdTickets Ticket[]   @relation("TicketCreatedBy")
+  solvedTickets  Ticket[]   @relation("TicketSolvedBy")
   
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -124,6 +125,11 @@ model Ticket {
   // Relationships
   createdById   Int
   createdBy     User          @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  
+  // Solver tracking - who solved/closed the ticket
+  solvedById    Int?
+  solvedBy      User?         @relation("TicketSolvedBy", fields: [solvedById], references: [id])
+  solvedAt      DateTime?     // When the ticket was solved
   
   // Attachments
   attachments   Attachment[]
@@ -167,6 +173,11 @@ model ArchivedTicket {
   location      Location?      // Required: Location for filtering
   
   createdById   Int
+  
+  // Solver tracking for archived tickets
+  solvedById    Int?
+  solvedAt      DateTime?
+  
   createdAt     DateTime
   updatedAt     DateTime
   archivedAt    DateTime      @default(now())
